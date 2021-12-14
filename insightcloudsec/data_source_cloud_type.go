@@ -23,7 +23,7 @@ func dataSourceCloudTypes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"cloud_type_id": {
+						"cloud_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},

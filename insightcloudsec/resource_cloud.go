@@ -53,8 +53,8 @@ func resourceCloud() *schema.Resource {
 			},
 			"azure": {
 				Type:          schema.TypeList,
-				Required:      true,
-				ConflictsWith: []string{"aws", "gce"},
+				Optional:      true,
+				ConflictsWith: []string{"aws"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"tenant_id": {
@@ -79,8 +79,8 @@ func resourceCloud() *schema.Resource {
 			},
 			"aws": {
 				Type:          schema.TypeList,
-				Required:      true,
-				ConflictsWith: []string{"azure", "gce"},
+				Optional:      true,
+				ConflictsWith: []string{"azure"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authentication_type": {
@@ -120,7 +120,7 @@ func resourceCloud() *schema.Resource {
 			},
 			// "gce": {
 			// 	Type:          schema.TypeList,
-			// 	Required:      true,
+			// 	Optional:      true,
 			// 	ConflictsWith: []string{"azure", "aws"},
 			// 	Elem: &schema.Resource{
 			// 		Schema: map[string]*schema.Schema{
