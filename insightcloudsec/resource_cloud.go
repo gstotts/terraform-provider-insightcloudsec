@@ -163,10 +163,10 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	if azureOk {
 		params.CloudType = "AZURE_ARM"
 		params.AuthType = "standard"
-		params.TenantID = d.Get("cloud_type.0.azure.0.tenant_id").(string)
-		params.AppID = d.Get("cloud_type.0.azure.0.app_id").(string)
-		params.SubscriptionID = d.Get("cloud_type.0.azure.0.subscription_id").(string)
-		params.ApiKeyOrCert = d.Get("cloud_type.0.azure.0.api_key").(string)
+		params.TenantID = d.Get("cloud_type.azure.0.tenant_id").(string)
+		params.AppID = d.Get("cloud_type.azure.0.app_id").(string)
+		params.SubscriptionID = d.Get("cloud_type.azure.0.subscription_id").(string)
+		params.ApiKeyOrCert = d.Get("cloud_type.azure.0.api_key").(string)
 
 		cloud, err = c.AddAzureCloud(ics.AzureCloudAccount{CreationParameters: params})
 		if err != nil {
