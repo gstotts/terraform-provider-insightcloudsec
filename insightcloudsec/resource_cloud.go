@@ -23,10 +23,6 @@ func resourceCloud() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"account_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			"creation_time": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -51,69 +47,82 @@ func resourceCloud() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"azure": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ConflictsWith: []string{"aws"},
+			"cloud_type": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"tenant_id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"app_id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"subscription_id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"api_key": {
-							Type:      schema.TypeString,
-							Required:  true,
-							Sensitive: true,
-						},
-					},
-				},
-			},
-			"aws": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ConflictsWith: []string{"azure"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"authentication_type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"assume_role", "instance_assume_role"}, false),
-						},
-						"role_arn": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"api_key": {
-							Type:     schema.TypeString,
+						"azure": {
+							Type:     schema.TypeList,
 							Optional: true,
-							Default:  "",
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"tenant_id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"app_id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"subscription_id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"api_key": {
+										Type:      schema.TypeString,
+										Required:  true,
+										Sensitive: true,
+									},
+								},
+							},
 						},
-						"secret_key": {
-							Type:     schema.TypeString,
+						"aws": {
+							Type:     schema.TypeList,
 							Optional: true,
-							Default:  "",
-						},
-						"duration": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  3600,
-						},
-						"external_id": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"session_name": {
-							Type:     schema.TypeString,
-							Optional: true,
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"authentication_type": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice([]string{"assume_role", "instance_assume_role"}, false),
+									},
+									"role_arn": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"api_key": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  "",
+									},
+									"secret_key": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  "",
+									},
+									"duration": {
+										Type:     schema.TypeInt,
+										Optional: true,
+										Default:  3600,
+									},
+									"external_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"session_name": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -154,10 +163,10 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	if azureOk {
 		params.CloudType = "AZURE_ARM"
 		params.AuthType = "standard"
-		params.TenantID = d.Get("azure.0.tenant_id").(string)
-		params.AppID = d.Get("azure.0.app_id").(string)
-		params.SubscriptionID = d.Get("azure.0.subscription_id").(string)
-		params.ApiKeyOrCert = d.Get("azure.0.api_key").(string)
+		params.TenantID = d.Get("cloud_type.0.azure.0.tenant_id").(string)
+		params.AppID = d.Get("cloud_type.0.azure.0.app_id").(string)
+		params.SubscriptionID = d.Get("cloud_type.0.azure.0.subscription_id").(string)
+		params.ApiKeyOrCert = d.Get("cloud_type.0.azure.0.api_key").(string)
 
 		cloud, err = c.AddAzureCloud(ics.AzureCloudAccount{CreationParameters: params})
 		if err != nil {
@@ -194,6 +203,10 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	// GCE Cloud Accounts
+
+	if !azureOk && !awsOk {
+		return diag.FromErr(fmt.Errorf("[ERROR] Must set at least one cloud type block: aws, azure, etc"))
+	}
 
 	d.SetId(strconv.Itoa(cloud.ID))
 	d.Set("resource_id", cloud.ResourceID)

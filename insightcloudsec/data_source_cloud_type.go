@@ -47,9 +47,9 @@ func dataSourceCloudTypesRead(ctx context.Context, d *schema.ResourceData, m int
 	typeDetails := make([]interface{}, 0)
 	for _, d := range ctypes.CloudTypes {
 		typeDetails = append(typeDetails, map[string]interface{}{
-			"cloud_type_id": d.ID,
-			"name":          d.Name,
-			"cloud_access":  d.Access,
+			"cloud_type":   d.ID,
+			"name":         d.Name,
+			"cloud_access": d.Access,
 		})
 	}
 

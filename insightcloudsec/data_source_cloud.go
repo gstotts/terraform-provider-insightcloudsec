@@ -2,6 +2,7 @@ package insightcloudsec
 
 import (
 	"context"
+	"strconv"
 
 	ics "github.com/gstotts/insightcloudsec"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -58,7 +59,6 @@ func dataSourceCloudRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", cloud.ID)
 	d.Set("name", cloud.Name)
 	d.Set("cloud_type", cloud.CloudTypeID)
 	d.Set("account_id", cloud.AccountID)
@@ -67,6 +67,8 @@ func dataSourceCloudRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("cloud_organization_id", cloud.CloudOrgID)
 	d.Set("group_resource_id", cloud.GroupResourceID)
 	d.Set("resource_id", cloud.ResourceID)
+
+	d.SetId(strconv.Itoa(cloud.ID))
 
 	return diags
 }
