@@ -3,6 +3,7 @@ package insightcloudsec
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -10,6 +11,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+var (
+	// For use in ConflictsWith statements
+	AZR_ONLY_ATTR = []string{"tenant_id", "subscription_id", "app_id"}
+	AWS_ONLY_ATTR = []string{"account", "role_arn", "duration", "external_id", "session_name", "secret_key"}
+	GCE_ONLY_ATTR = []string{"project", "api_credentials"}
+
+	// Combinations of Attributes
+	AZR_AND_GCP_ATTR = append(AZR_ONLY_ATTR, GCE_ONLY_ATTR...)
+	AZR_AND_AWS_ATTR = append(AZR_ONLY_ATTR, AWS_ONLY_ATTR...)
+	AZR_AND_GCE_ATTR = append(AWS_ONLY_ATTR, GCE_ONLY_ATTR...)
 )
 
 func resourceCloud() *schema.Resource {
@@ -48,100 +61,140 @@ func resourceCloud() *schema.Resource {
 				Computed: true,
 			},
 			"cloud_type": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"aws", "azure", "gce"}, false),
+			},
+			"tenant_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCE_ATTR,
+				RequiredWith:  AZR_ONLY_ATTR,
+			},
+			"app_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCE_ATTR,
+				RequiredWith:  AZR_ONLY_ATTR,
+			},
+			"subscription_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCE_ATTR,
+				RequiredWith:  AZR_ONLY_ATTR,
+			},
+			// Used in multiple clouds so must careful use ConflictsWith and RequiredWith
+			"api_key": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				ConflictsWith: []string{},
+				RequiredWith:  []string{},
+			},
+			"account": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCP_ATTR,
+				RequiredWith:  AWS_ONLY_ATTR,
+			},
+			"authentication_type": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCP_ATTR,
+				RequiredWith:  AWS_ONLY_ATTR,
+				ValidateFunc:  validation.StringInSlice([]string{"assume_role", "instance_assume_role"}, false),
+			},
+			"role_arn": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCP_ATTR,
+				RequiredWith:  AWS_ONLY_ATTR,
+			},
+			// Not required for use with assume_role authentication method
+			"secret_key": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCP_ATTR,
+			},
+			"duration": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCP_ATTR,
+			},
+			"external_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCP_ATTR,
+				RequiredWith:  AWS_ONLY_ATTR,
+			},
+			"session_name": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_GCP_ATTR,
+				RequiredWith:  AWS_ONLY_ATTR,
+			},
+			"api_credentials": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ConflictsWith: AZR_AND_AWS_ATTR,
+				RequiredWith:  GCE_ONLY_ATTR,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"azure": {
-							Type:     schema.TypeList,
+						"type": {
+							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"tenant_id": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"app_id": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"subscription_id": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"api_key": {
-										Type:      schema.TypeString,
-										Required:  true,
-										Sensitive: true,
-									},
-								},
-							},
+							Default:  "service_account",
 						},
-						"aws": {
-							Type:     schema.TypeList,
-							Optional: true,
-							ForceNew: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"account": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"authentication_type": {
-										Type:         schema.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringInSlice([]string{"assume_role", "instance_assume_role"}, false),
-									},
-									"role_arn": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"api_key": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Default:  "",
-									},
-									"secret_key": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Default:  "",
-									},
-									"duration": {
-										Type:     schema.TypeInt,
-										Optional: true,
-										Default:  3600,
-									},
-									"external_id": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"session_name": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
+						"project_id": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
+						"private_key_id": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
+						"private_key": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Sensitive:    true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
+						"client_email": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
+						"auth_uri": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
+						"token_uri": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
+						"auth_provider_x509_cert_url": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
+						"client_x509_cert_url": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
 						},
 					},
 				},
 			},
-			// "gce": {
-			// 	Type:          schema.TypeList,
-			// 	Optional:      true,
-			// 	ConflictsWith: []string{"azure", "aws"},
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"project": {
-			// 				Type: schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 			"": {},
-			// 		},
-			// 	},
-			// },
-			//},
+			"project": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: AZR_AND_AWS_ATTR,
+				RequiredWith:  GCE_ONLY_ATTR,
+			},
 		},
 	}
 }
@@ -154,58 +207,98 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	// Common Parameters
 	params := ics.CloudAccountParameters{
-		Name:          d.Get("name").(string),
-		AccountNumber: d.Get("account_id").(string),
+		Name:      d.Get("name").(string),
+		CloudType: d.Get("cloud_type").(string),
 	}
 
 	// Azure Cloud Accounts
-	_, azureOk := d.GetOk("azure")
-	if azureOk {
+	if params.CloudType == "azure" {
 		params.CloudType = "AZURE_ARM"
 		params.AuthType = "standard"
-		params.TenantID = d.Get("cloud_type.azure.0.tenant_id").(string)
-		params.AppID = d.Get("cloud_type.azure.0.app_id").(string)
-		params.SubscriptionID = d.Get("cloud_type.azure.0.subscription_id").(string)
-		params.ApiKeyOrCert = d.Get("cloud_type.azure.0.api_key").(string)
+		params.TenantID = d.Get("tenant_id").(string)
+		params.AppID = d.Get("app_id").(string)
+		params.SubscriptionID = d.Get("subscription_id").(string)
+		params.ApiKeyOrCert = d.Get("api_key").(string)
 
 		cloud, err = c.AddAzureCloud(ics.AzureCloudAccount{CreationParameters: params})
 		if err != nil {
-			return diag.FromErr(err)
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Error Adding Azure Cloud",
+				Detail: fmt.Sprintf("%s\n%s\n\n%s\n%s",
+					"An error was returned when attempting to add an Azure Cloud to InsightCloudSec.",
+					"This could be the result of an incorrect tenant_id, subscription_id or app_id.",
+					"Error from API:", err),
+			})
+			return diags
 		}
+
+		log.Println("[DEBUG] Azure Cloud Returned from API: \n%", cloud)
 	}
 
 	// AWS Cloud Accounts
-	_, awsOk := d.GetOk("aws")
-	if awsOk {
-		params := ics.CloudAccountParameters{
-			RoleArn:     d.Get("aws.0.role_arn").(string),
-			Duration:    d.Get("aws.0.duration").(int),
-			SessionName: d.Get("aws.0.session_name").(string),
-			ExternalID:  d.Get("aws.0.external_id").(string),
-			CloudType:   "AWS",
-		}
+	if params.CloudType == "aws" {
+		params.RoleArn = d.Get("aws.0.role_arn").(string)
+		params.Duration = d.Get("aws.0.duration").(int)
+		params.SessionName = d.Get("aws.0.session_name").(string)
+		params.ExternalID = d.Get("aws.0.external_id").(string)
+		params.CloudType = "AWS"
 
-		auth_type := strings.ToLower(d.Get("aws.0.authentication_type").(string))
+		auth_type := strings.ToLower(d.Get("authentication_type").(string))
 		params.AuthType = auth_type
 
 		if auth_type == "assume_role" {
 			// AWS STS Assume Role (Instance Assume does not require)
-			params.ApiKeyOrCert = d.Get("aws.0.api_key").(string)
-			params.SecretKey = d.Get("aws.0.secret_key").(string)
+			params.ApiKeyOrCert = d.Get("api_key").(string)
+			params.SecretKey = d.Get("secret_key").(string)
 		} else if auth_type != "instance_assume_role" {
 			return diag.FromErr(fmt.Errorf("[ERROR] Invalid authentication type,  must be assume_role or instance_assume_role for AWS clouds"))
 		}
 
 		cloud, err = c.AddAWSCloud(ics.AWSCloudAccount{CreationParameters: params})
 		if err != nil {
-			return diag.FromErr(err)
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Error Adding AWS Cloud",
+				Detail: fmt.Sprintf("%s\n%s\n\n%s\n%s",
+					"An error was returned when attempting to add an AWS Cloud to InsightCloudSec.",
+					"This could be the result of an incorrect tenant_id, subscription_id or app_id.",
+					"Error from API:", err),
+			})
+			return diags
 		}
+
+		log.Println("[DEBUG] AWS Cloud Returned from API: \n%", cloud)
 	}
 
 	// GCE Cloud Accounts
 
-	if !azureOk && !awsOk {
-		return diag.FromErr(fmt.Errorf("[ERROR] Must set at least one cloud type block: aws, azure, etc"))
+	if params.CloudType == "gce" {
+		params.GCPAuth.Type = d.Get("api_credentials.type").(string)
+		params.GCPAuth.ProjectID = d.Get("api_credentials.project_id").(string)
+		params.GCPAuth.PrivateKeyID = d.Get("api_credentials.private_key_id").(string)
+		params.GCPAuth.PrivateKey = d.Get("api_credentials.private_key").(string)
+		params.GCPAuth.ClientEmail = d.Get("api_credentials.client_email").(string)
+		params.GCPAuth.ClientID = d.Get("api_credentials.client_id").(string)
+		params.GCPAuth.AuthURI = d.Get("api_credentials.auth_uri").(string)
+		params.GCPAuth.TokenURI = d.Get("api_credentials.token_uri").(string)
+		params.GCPAuth.AuthProviderx509CertURL = d.Get("api_credentials.auth_provider_x509_cert_url").(string)
+		params.GCPAuth.Clientx509CertUrl = d.Get("api_credentials.client_509x_cert_url").(string)
+
+		cloud, err = c.AddGCPCloud(ics.GCPCloudAccount{CreationParameters: params})
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Error Adding GCP Cloud",
+				Detail: fmt.Sprintf("%s\n%s\n\n%s\n%s",
+					"An error was returned when attempting to add a GCP Cloud to InsightCloudSec.",
+					"This could be the result of an incorrect tenant_id, subscription_id or app_id.",
+					"Error from API:", err),
+			})
+			return diags
+		}
+
+		log.Println("[DEBUG] GCP Cloud Returned from API: \n%", cloud)
 	}
 
 	d.SetId(strconv.Itoa(cloud.ID))

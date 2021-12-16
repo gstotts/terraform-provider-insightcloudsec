@@ -2,6 +2,7 @@ package insightcloudsec
 
 import (
 	"context"
+	"log"
 	"strconv"
 
 	ics "github.com/gstotts/insightcloudsec"
@@ -58,6 +59,8 @@ func dataSourceCloudRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	log.Println("[DEBUG] Cloud Returned from API: \n%", cloud)
 
 	d.Set("name", cloud.Name)
 	d.Set("cloud_type", cloud.CloudTypeID)
