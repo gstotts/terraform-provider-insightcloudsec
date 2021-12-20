@@ -3,7 +3,7 @@ module terraform-provider-insightcloudsec
 go 1.17
 
 require (
-	github.com/gstotts/insightcloudsec v0.0.14
+	github.com/gstotts/insightcloudsec v0.0.15
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.0
 )
 

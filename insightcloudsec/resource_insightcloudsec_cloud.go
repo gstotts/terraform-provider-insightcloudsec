@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	ics "github.com/gstotts/insightcloudsec"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -40,6 +41,11 @@ func resourceCloud() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"last_updated": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"status": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -63,7 +69,7 @@ func resourceCloud() *schema.Resource {
 			"cloud_type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"aws", "azure", "gce"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"AWS", "AZURE_ARM", "GCE"}, false),
 			},
 			"tenant_id": {
 				Type:          schema.TypeString,
@@ -212,8 +218,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	// Azure Cloud Accounts
-	if params.CloudType == "azure" {
-		params.CloudType = "AZURE_ARM"
+	if params.CloudType == "AZURE_ARM" {
 		params.AuthType = "standard"
 		params.TenantID = d.Get("tenant_id").(string)
 		params.AppID = d.Get("app_id").(string)
@@ -237,12 +242,11 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	// AWS Cloud Accounts
-	if params.CloudType == "aws" {
+	if params.CloudType == "AWS" {
 		params.RoleArn = d.Get("aws.0.role_arn").(string)
 		params.Duration = d.Get("aws.0.duration").(int)
 		params.SessionName = d.Get("aws.0.session_name").(string)
 		params.ExternalID = d.Get("aws.0.external_id").(string)
-		params.CloudType = "AWS"
 
 		auth_type := strings.ToLower(d.Get("authentication_type").(string))
 		params.AuthType = auth_type
@@ -262,7 +266,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 				Summary:  "Error Adding AWS Cloud",
 				Detail: fmt.Sprintf("%s\n%s\n\n%s\n%s",
 					"An error was returned when attempting to add an AWS Cloud to InsightCloudSec.",
-					"This could be the result of an incorrect tenant_id, subscription_id or app_id.",
+					"This could be the result of an incorrect role_arn, api_key, secret_key, etc.",
 					"Error from API:", err),
 			})
 			return diags
@@ -273,7 +277,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	// GCE Cloud Accounts
 
-	if params.CloudType == "gce" {
+	if params.CloudType == "GCE" {
 		params.GCPAuth.Type = d.Get("api_credentials.type").(string)
 		params.GCPAuth.ProjectID = d.Get("api_credentials.project_id").(string)
 		params.GCPAuth.PrivateKeyID = d.Get("api_credentials.private_key_id").(string)
@@ -292,7 +296,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 				Summary:  "Error Adding GCP Cloud",
 				Detail: fmt.Sprintf("%s\n%s\n\n%s\n%s",
 					"An error was returned when attempting to add a GCP Cloud to InsightCloudSec.",
-					"This could be the result of an incorrect tenant_id, subscription_id or app_id.",
+					"This could be the result of an incorrect credentials or project settings.",
 					"Error from API:", err),
 			})
 			return diags
@@ -302,13 +306,6 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	d.SetId(strconv.Itoa(cloud.ID))
-	d.Set("resource_id", cloud.ResourceID)
-	d.Set("group_resource_id", cloud.GroupResourceID)
-	d.Set("status", cloud.Status)
-	d.Set("creation_time", cloud.Created)
-	d.Set("org_resource_id", cloud.CloudOrgID)
-	d.Set("strategy_id", cloud.StrategyID)
-
 	resourceCloudRead(ctx, d, m)
 
 	return diags
@@ -345,6 +342,67 @@ func resourceCloudRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 func resourceCloudUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+	c := m.(*ics.Client)
+
+	// Common Parameters
+	params := ics.CloudAccountParameters{
+		Name:      d.Get("name").(string),
+		CloudType: d.Get("cloud_type").(string),
+	}
+
+	// Azure Cloud Accounts Parameters
+	if params.CloudType == "AZURE_ARM" {
+		params.AuthType = "standard"
+		params.TenantID = d.Get("tenant_id").(string)
+		params.AppID = d.Get("app_id").(string)
+		params.SubscriptionID = d.Get("subscription_id").(string)
+		params.ApiKeyOrCert = d.Get("api_key").(string)
+	}
+
+	// AWS Cloud Account Parameters
+	if params.CloudType == "AWS" {
+		params.RoleArn = d.Get("aws.0.role_arn").(string)
+		params.Duration = d.Get("aws.0.duration").(int)
+		params.SessionName = d.Get("aws.0.session_name").(string)
+		params.ExternalID = d.Get("aws.0.external_id").(string)
+		params.CloudType = "AWS"
+
+		auth_type := strings.ToLower(d.Get("authentication_type").(string))
+		params.AuthType = auth_type
+
+		if auth_type == "assume_role" {
+			// AWS STS Assume Role (Instance Assume does not require)
+			params.ApiKeyOrCert = d.Get("api_key").(string)
+			params.SecretKey = d.Get("secret_key").(string)
+		} else if auth_type != "instance_assume_role" {
+			return diag.FromErr(fmt.Errorf("[ERROR] Invalid authentication type,  must be assume_role or instance_assume_role for AWS clouds"))
+		}
+	}
+
+	// GCE Cloud Accounts
+	if params.CloudType == "GCE" {
+		params.GCPAuth.Type = d.Get("api_credentials.type").(string)
+		params.GCPAuth.ProjectID = d.Get("api_credentials.project_id").(string)
+		params.GCPAuth.PrivateKeyID = d.Get("api_credentials.private_key_id").(string)
+		params.GCPAuth.PrivateKey = d.Get("api_credentials.private_key").(string)
+		params.GCPAuth.ClientEmail = d.Get("api_credentials.client_email").(string)
+		params.GCPAuth.ClientID = d.Get("api_credentials.client_id").(string)
+		params.GCPAuth.AuthURI = d.Get("api_credentials.auth_uri").(string)
+		params.GCPAuth.TokenURI = d.Get("api_credentials.token_uri").(string)
+		params.GCPAuth.AuthProviderx509CertURL = d.Get("api_credentials.auth_provider_x509_cert_url").(string)
+		params.GCPAuth.Clientx509CertUrl = d.Get("api_credentials.client_509x_cert_url").(string)
+	}
+
+	id, _ := strconv.Atoi(d.Id())
+	log.Println("[DEBUG] Updating Cloud ID: ", id)
+	_, err := c.UpdateCloud(id, params)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.Set("last_updated", time.Now().Format(time.RFC850))
+	resourceCloudRead(ctx, d, m)
+
 	return diags
 }
 
