@@ -120,6 +120,7 @@ func resourceCloud() *schema.Resource {
 			"secret_key": {
 				Type:          schema.TypeString,
 				Optional:      true,
+				Sensitive:     true,
 				ConflictsWith: AZR_AND_GCP_ATTR,
 			},
 			"duration": {
@@ -243,10 +244,10 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	// AWS Cloud Accounts
 	if params.CloudType == "AWS" {
-		params.RoleArn = d.Get("aws.0.role_arn").(string)
-		params.Duration = d.Get("aws.0.duration").(int)
-		params.SessionName = d.Get("aws.0.session_name").(string)
-		params.ExternalID = d.Get("aws.0.external_id").(string)
+		params.RoleArn = d.Get("role_arn").(string)
+		params.Duration = d.Get("duration").(int)
+		params.SessionName = d.Get("session_name").(string)
+		params.ExternalID = d.Get("external_id").(string)
 
 		auth_type := strings.ToLower(d.Get("authentication_type").(string))
 		params.AuthType = auth_type
@@ -255,6 +256,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 			// AWS STS Assume Role (Instance Assume does not require)
 			params.ApiKeyOrCert = d.Get("api_key").(string)
 			params.SecretKey = d.Get("secret_key").(string)
+			log.Println("[DEBUG] Setting up Assume Role for: ", params.Name)
 		} else if auth_type != "instance_assume_role" {
 			return diag.FromErr(fmt.Errorf("[ERROR] Invalid authentication type,  must be assume_role or instance_assume_role for AWS clouds"))
 		}
@@ -326,7 +328,7 @@ func resourceCloudRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	d.Set("name", cloud.Name)
-	d.Set("account_id", cloud.AccountID)
+	d.Set("account", cloud.AccountID)
 	d.Set("resource_id", cloud.ResourceID)
 	d.Set("group_resource_id", cloud.GroupResourceID)
 	d.Set("status", cloud.Status)
@@ -334,9 +336,6 @@ func resourceCloudRead(ctx context.Context, d *schema.ResourceData, m interface{
 	d.Set("strategy_id", cloud.StrategyID)
 	d.Set("cloud_type", cloud.CloudTypeID)
 
-	if cloud.CloudTypeID == "AWS" {
-		d.Set("role_arn", cloud.RoleARN)
-	}
 	return diags
 }
 
