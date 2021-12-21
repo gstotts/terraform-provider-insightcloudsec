@@ -26,7 +26,7 @@ func datasSourceCloud() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"account_id": {
+			"account": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -36,10 +36,6 @@ func datasSourceCloud() *schema.Resource {
 			},
 			"strategy_id": {
 				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"cloud_organization_id": {
-				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"group_resource_id": {
@@ -64,10 +60,9 @@ func dataSourceCloudRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	d.Set("name", cloud.Name)
 	d.Set("cloud_type", cloud.CloudTypeID)
-	d.Set("account_id", cloud.AccountID)
+	d.Set("account", cloud.AccountID)
 	d.Set("resource_id", cloud.ResourceID)
 	d.Set("strategy_id", cloud.StrategyID)
-	d.Set("cloud_organization_id", cloud.CloudOrgID)
 	d.Set("group_resource_id", cloud.GroupResourceID)
 	d.Set("resource_id", cloud.ResourceID)
 

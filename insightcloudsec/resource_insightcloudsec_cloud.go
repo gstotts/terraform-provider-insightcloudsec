@@ -289,7 +289,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		params.GCPAuth.AuthURI = d.Get("api_credentials.auth_uri").(string)
 		params.GCPAuth.TokenURI = d.Get("api_credentials.token_uri").(string)
 		params.GCPAuth.AuthProviderx509CertURL = d.Get("api_credentials.auth_provider_x509_cert_url").(string)
-		params.GCPAuth.Clientx509CertUrl = d.Get("api_credentials.client_509x_cert_url").(string)
+		params.GCPAuth.Clientx509CertUrl = d.Get("api_credentials.client_x509_cert_url").(string)
 
 		cloud, err = c.AddGCPCloud(ics.GCPCloudAccount{CreationParameters: params})
 		if err != nil {
