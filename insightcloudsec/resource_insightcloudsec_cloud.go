@@ -407,6 +407,12 @@ func resourceCloudUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceCloudDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*ics.Client)
 	var diags diag.Diagnostics
+
+	err := c.DeleteCloud(d.Get("resource_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return diags
 }
