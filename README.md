@@ -5,6 +5,6 @@ This provider is currently a work in progress and not yet a part of the Terrafor
 
 # Documentation
 - Rapid7 InsightCloudSec Documentation:
-  - API Documentation
-  - Application Documentation
+  - [API Documentation](https://docs.divvycloud.com/reference/)
+  - [Application Documentation](https://docs.divvycloud.com/docs)
 
