@@ -20,16 +20,19 @@ func dataSourceCloudTypes() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cloud_access": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The accessibility of the cloud. Possible values:  public, private",
 						},
 						"cloud_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The identifier assigned to the cloud type within InsightCloudSec",
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The full name of the cloud type",
 						},
 					},
 				},
