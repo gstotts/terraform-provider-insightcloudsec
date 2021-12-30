@@ -193,6 +193,11 @@ func resourceCloud() *schema.Resource {
 							Optional:     true,
 							RequiredWith: GCE_ONLY_ATTR,
 						},
+						"client_id": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: GCE_ONLY_ATTR,
+						},
 						"auth_uri": {
 							Type:         schema.TypeString,
 							Optional:     true,
@@ -300,16 +305,8 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	// GCE Cloud Accounts
 
 	if params.CloudType == "GCE" {
-		params.GCPAuth.Type = d.Get("api_credentials.type").(string)
-		params.GCPAuth.ProjectID = d.Get("api_credentials.project_id").(string)
-		params.GCPAuth.PrivateKeyID = d.Get("api_credentials.private_key_id").(string)
-		params.GCPAuth.PrivateKey = d.Get("api_credentials.private_key").(string)
-		params.GCPAuth.ClientEmail = d.Get("api_credentials.client_email").(string)
-		params.GCPAuth.ClientID = d.Get("api_credentials.client_id").(string)
-		params.GCPAuth.AuthURI = d.Get("api_credentials.auth_uri").(string)
-		params.GCPAuth.TokenURI = d.Get("api_credentials.token_uri").(string)
-		params.GCPAuth.AuthProviderx509CertURL = d.Get("api_credentials.auth_provider_x509_cert_url").(string)
-		params.GCPAuth.Clientx509CertUrl = d.Get("api_credentials.client_509x_cert_url").(string)
+		params.GCPAuth = gcpCredentialsExpand(d.Get("api_credentials").(*schema.Set))
+		params.Project = d.Get("project").(string)
 
 		cloud, err = c.AddGCPCloud(ics.GCPCloudAccount{CreationParameters: params})
 		if err != nil {
@@ -400,16 +397,7 @@ func resourceCloudUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	// GCE Cloud Accounts
 	if params.CloudType == "GCE" {
-		params.GCPAuth.Type = d.Get("api_credentials.type").(string)
-		params.GCPAuth.ProjectID = d.Get("api_credentials.project_id").(string)
-		params.GCPAuth.PrivateKeyID = d.Get("api_credentials.private_key_id").(string)
-		params.GCPAuth.PrivateKey = d.Get("api_credentials.private_key").(string)
-		params.GCPAuth.ClientEmail = d.Get("api_credentials.client_email").(string)
-		params.GCPAuth.ClientID = d.Get("api_credentials.client_id").(string)
-		params.GCPAuth.AuthURI = d.Get("api_credentials.auth_uri").(string)
-		params.GCPAuth.TokenURI = d.Get("api_credentials.token_uri").(string)
-		params.GCPAuth.AuthProviderx509CertURL = d.Get("api_credentials.auth_provider_x509_cert_url").(string)
-		params.GCPAuth.Clientx509CertUrl = d.Get("api_credentials.client_509x_cert_url").(string)
+		params.GCPAuth = gcpCredentialsExpand(d.Get("api_credentials").(*schema.Set))
 	}
 
 	id, _ := strconv.Atoi(d.Id())
@@ -434,4 +422,22 @@ func resourceCloudDelete(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 	return diags
+}
+
+func gcpCredentialsExpand(credSet *schema.Set) (creds ics.GCPAccountApiCreds) {
+	o := credSet.List()[0].(map[string]interface{})
+	creds = ics.GCPAccountApiCreds{
+		Type:                    o["type"].(string),
+		ProjectID:               o["project_id"].(string),
+		PrivateKeyID:            o["private_key_id"].(string),
+		PrivateKey:              o["private_key"].(string),
+		AuthURI:                 o["auth_uri"].(string),
+		TokenURI:                o["token_uri"].(string),
+		ClientEmail:             o["client_email"].(string),
+		ClientID:                o["client_id"].(string),
+		Clientx509CertUrl:       o["client_x509_cert_url"].(string),
+		AuthProviderx509CertURL: o["auth_provider_x509_cert_url"].(string),
+	}
+
+	return creds
 }
