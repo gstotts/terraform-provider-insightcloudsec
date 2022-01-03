@@ -13,7 +13,48 @@ Provides details on a cloud configuration for InsightCloudSec.
 ## Example Usage
 ```terraform
 
+# AWS Cloud Example
+resource "insightcloudsec_cloud" "my_aws_cloud" {
+    name        = "My AWS Cloud"
+    cloud_type  = "AWS"
+    account     = "123412341234"
 
+    authentication_type = "assume_role"
+    role_arn            = "arm:aws:iam::123412341234:role/MyICSRole"
+    api_key             = var.my_aws_cloud_api_key
+    session_name        = "InsightCloudSec"
+}
+
+# Azure Cloud Example
+resource "insightcloudsec_cloud" "my_azure_cloud" {
+    name            = "My Azure Cloud"
+    cloud_type      = "AZURE_ARM"
+    tenant_id       = "x0xx10-00x0-0x01-0xxx-x0x0x01x100"
+    subscription_id = "x0xx10-00x0-0x01-0xxx-x0x0x01x200"
+    app_id          = "x0xx10-00x0-0x01-0xxx-x0x0x01x300"
+    api_key         = var.my_azure_cloud_api_key
+}
+
+# GCE Cloud Example
+resource "insightcloudsec_cloud" "my_gce_cloud" {
+    name        = "My GCE Cloud"
+    cloud_type  = "GCE"
+    project     = var.my_gce_project
+
+    api_credentials {
+        project_id      = var.my_gce_project.id
+        type            = "service_account"
+        private_key_id  = var.my_gce_cloud.private_key_id
+        private_key     = var.my_gce_cloud.private_key
+        client_id       = "my_service_account_id"
+        client_email    = "myserviceaccountemail@my-project.iam.gserviceaccount.com"
+        
+        auth_uri                    = "https://..."
+        token_uri                   = "https://..."
+        auth_provider_x509_cert_url = "https://..."
+        client_x509_cert_url        = "https://..."
+    }
+}
 ```
 
 ## Argument Reference
