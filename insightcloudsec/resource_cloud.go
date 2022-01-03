@@ -228,6 +228,9 @@ func resourceCloud() *schema.Resource {
 				RequiredWith:  GCE_ONLY_ATTR,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
