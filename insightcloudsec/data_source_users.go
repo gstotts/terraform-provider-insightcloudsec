@@ -109,6 +109,7 @@ func dataSourceUsers() *schema.Resource {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Lists any blacklisted navigation links for the user",
+							Elem:        schema.TypeString,
 						},
 						"require_pw_reset": {
 							Type:        schema.TypeBool,
