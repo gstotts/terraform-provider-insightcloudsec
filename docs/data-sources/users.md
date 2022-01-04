@@ -8,7 +8,7 @@ description: |-
 
 # insightcloudsec_users
 
-The users data source returns a list of users in the InsightCloudSec console, their details, and a user count.
+The users data source returns a list of users in the InsightCloudSec console, their details, and a user count.  This data source does not currently return domain administrators as the InsightCloudSec API call does not return them either.  Until the API has the proper functionality to do so, it will only return those not assigned to the domain roles.
 
 ## Example Usage
 ```terraform
