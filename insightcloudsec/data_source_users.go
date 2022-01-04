@@ -60,7 +60,7 @@ func dataSourceUsers() *schema.Resource {
 							Computed:    true,
 							Description: "The username for the user",
 						},
-						"organziation_name": {
+						"organization_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The organization name to which the user belongs",
