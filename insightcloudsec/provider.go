@@ -36,6 +36,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"insightcloudsec_cloud":       datasSourceCloud(),
 			"insightcloudsec_cloud_types": dataSourceCloudTypes(),
+			"insightcloudsec_users":       dataSourceUsers(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
