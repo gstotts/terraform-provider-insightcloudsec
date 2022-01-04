@@ -179,7 +179,7 @@ func dataSourceUsersRead(ctx context.Context, d *schema.ResourceData, m interfac
 			"last_login_time":                   user.LastLogin,
 			"navigation_blacklist":              user.NavigationBlacklist,
 			"require_pw_reset":                  user.RequirePWReset,
-			"console_access_deined":             user.ConsoleAccessDenied,
+			"console_access_denied":             user.ConsoleAccessDenied,
 			"active_api_key_present":            user.ActiveAPIKey,
 			"create_date":                       user.Created,
 		})
