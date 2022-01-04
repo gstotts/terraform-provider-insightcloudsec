@@ -21,8 +21,8 @@ Currently the provider is in intial creation and testing and, as such, not recom
 terraform {
     required_providers {
         insightcloudsec = {
-            version = "0.0.1"
-            source = "gregorystotts.com/com/insightcloudsec"
+            source = "gstotts/insightcloudsec"
+            version = "0.1.0"
         }
     }
 }
