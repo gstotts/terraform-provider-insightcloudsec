@@ -24,14 +24,14 @@ This data source does not support any arguments.
 
 ## Attributes Reference
 
-- **id** The ID of this resource.
-- **clouds** (see [below for nested schema](#nestedatt--clouds))
+- `id` The ID of this resource.
+- `clouds` (see [below for nested schema](#nestedatt--clouds))
 
 <a id="nestedatt--clouds"></a>
 ### Nested Schema for `clouds`
 
-- **cloud_access** Indicates whethere the cloud is public, private, or hybrid.
-- **cloud_type** Provides the shorthand name given to clouds of this type.  This is used with the clouds resource and data sources.
-- **name** The full name of the type of cloud.
+- `cloud_access` Indicates whethere the cloud is public, private, or hybrid.
+- `cloud_type` Provides the shorthand name given to clouds of this type.  This is used with the clouds resource and data sources.
+- `name` The full name of the type of cloud.
 
 

@@ -24,16 +24,16 @@ data "insightcloudsec_cloud" "my_cloud" {
 
 The following arguments are supported:
 
-- **name** (Required) The name of the cloud to retrieve
+- `name` (Required) The name of the cloud to retrieve
 
 ## Attribute Reference
 
-- **account_id** The identifier for the account associated with the cloud.  In the case of AWS, this is the account ID.  In Azure, this is the subscription ID
-- **cloud_organization_id** The organization ID for the cloud
-- **cloud_type** The identifier for the type of cloud utilized.  Examples:  AWS, AZURE_ARM, etc.
-- **group_resource_id** The group resource ID for the cloud
-- **id** The ID associated the the data source for this cloud
-- **resource_id** The resource ID provided by the console for the cloud
-- **strategy_id** The harvesting strategy ID for the cloud
+- `account_id` The identifier for the account associated with the cloud.  In the case of AWS, this is the account ID.  In Azure, this is the subscription ID
+- `cloud_organization_id` The organization ID for the cloud
+- `cloud_type` The identifier for the type of cloud utilized.  Examples:  AWS, AZURE_ARM, etc.
+- `group_resource_id` The group resource ID for the cloud
+- `id` The ID associated the the data source for this cloud
+- `resource_id` The resource ID provided by the console for the cloud
+- `strategy_id` The harvesting strategy ID for the cloud
 
 
