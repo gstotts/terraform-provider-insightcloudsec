@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceCloudTypes(t *testing.T) {
+func TestAccInsightCloudSec_DataSource_CloudTypes(t *testing.T) {
 	rnd := generateRandomResourceName()
 	name := fmt.Sprintf("data.insightcloudsec_cloud_types.%s", rnd)
 	resource.Test(t, resource.TestCase{
@@ -15,9 +15,9 @@ func TestAccDataSourceCloudTypes(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceCloudTypesConfig(rnd),
+				Config: testAccInsightCloudSec_DataSource_CloudTypesConfig(rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testResourceID("Cloud Types", name),
+					testDataSourceID("Cloud Types", name),
 					resource.TestCheckResourceAttr(name, "clouds.#", "10"),
 				),
 			},
@@ -25,6 +25,6 @@ func TestAccDataSourceCloudTypes(t *testing.T) {
 	})
 }
 
-func testAccDataSourceCloudTypesConfig(name string) string {
+func testAccInsightCloudSec_DataSource_CloudTypesConfig(name string) string {
 	return fmt.Sprintf(`data "insightcloudsec_cloud_types" "%[1]s" {}`, name)
 }

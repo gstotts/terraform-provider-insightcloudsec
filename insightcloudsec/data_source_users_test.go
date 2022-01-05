@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceUsers(t *testing.T) {
+func TestAccInsightCloudSec_DataSource_Users(t *testing.T) {
 	rnd := generateRandomResourceName()
 	name := fmt.Sprintf("data.insightcloudsec_users.%s", rnd)
 	resource.Test(t, resource.TestCase{
@@ -15,15 +15,15 @@ func TestAccDataSourceUsers(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceUsersConfig(rnd),
+				Config: testAccInsightCloudSec_DataSource_UsersConfig(rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testResourceID("Users", name),
+					testDataSourceID("Users", name),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceUsersConfig(name string) string {
+func testAccInsightCloudSec_DataSource_UsersConfig(name string) string {
 	return fmt.Sprintf(`data "insightcloudsec_users" "%[1]s" {}`, name)
 }

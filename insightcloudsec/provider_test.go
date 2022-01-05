@@ -27,13 +27,13 @@ func init() {
 	}
 }
 
-func TestProvider(t *testing.T) {
+func TestInsightCloudSec_Provider(t *testing.T) {
 	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
-func TestProvider_impl(t *testing.T) {
+func TestInsightCloudSec_Provider_impl(t *testing.T) {
 	var _ *schema.Provider = Provider()
 }
 
@@ -58,7 +58,7 @@ func generateRandomResourceName() string {
 	return acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 }
 
-func testResourceID(r string, n string) resource.TestCheckFunc {
+func testDataSourceID(r string, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		all := s.RootModule().Resources
 		rs, ok := all[n]
