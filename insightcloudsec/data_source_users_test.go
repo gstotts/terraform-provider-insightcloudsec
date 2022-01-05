@@ -5,12 +5,11 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccDataSourceUsers(t *testing.T) {
 	rnd := generateRandomResourceName()
-	name := 
+	name := fmt.Sprintf("data.insightcloudsec_users.%s", rnd)
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testPreCheck(t) },
 		Providers: testAccProviders,
@@ -18,7 +17,7 @@ func TestAccDataSourceUsers(t *testing.T) {
 			{
 				Config: testAccDataSourceUsersConfig(rnd),
 				Check: resource.ComposeTestCheckFunc(
-					,
+					testResourceID("Users", name),
 				),
 			},
 		},

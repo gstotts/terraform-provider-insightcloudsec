@@ -1,11 +1,14 @@
 package insightcloudsec
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const (
@@ -53,4 +56,20 @@ func testPreCheckApiKey(t *testing.T) {
 
 func generateRandomResourceName() string {
 	return acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+}
+
+func testResourceID(r string, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		all := s.RootModule().Resources
+		rs, ok := all[n]
+
+		if !ok {
+			return fmt.Errorf("can't find %s data source: %s", r, n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("%s source ID not set", r)
+		}
+		return nil
+	}
 }
