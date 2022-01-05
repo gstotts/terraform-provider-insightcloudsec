@@ -40,7 +40,7 @@ func testAccDataSourceCloudTypesId(n string) resource.TestCheckFunc {
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("Snapshot Cloud Types source ID not set")
+			return fmt.Errorf("Cloud Types source ID not set")
 		}
 		return nil
 	}
