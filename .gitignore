@@ -1,4 +1,4 @@
-examples*
+tests*
 vendor
 
 # Local .terraform directories
