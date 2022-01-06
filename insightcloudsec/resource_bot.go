@@ -103,7 +103,11 @@ func resourceBot() *schema.Resource {
 										Type:     schema.TypeString,
 										Required: true,
 									},
-									"config": {}, // Need to figure out what these are
+									"config": {
+										Type:     schema.TypeList, // Need to figure out what these are, using string for now
+										Required: true,
+										Elem:     schema.TypeString,
+									},
 								},
 							},
 						},
@@ -116,7 +120,11 @@ func resourceBot() *schema.Resource {
 										Type:     schema.TypeString,
 										Required: true,
 									},
-									"config": {}, // Need to figure out what these are
+									"config": {
+										Type:     schema.TypeList, // Need to figure out what these are, using string for now
+										Required: true,
+										Elem:     schema.TypeString,
+									},
 									"run_when_result_is": {
 										Type:     schema.TypeBool,
 										Required: true,
