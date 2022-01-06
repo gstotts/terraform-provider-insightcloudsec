@@ -5,6 +5,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+var (
+	// Bot Setting Options
+	VALID_BOT_STATES          = []string{"PAUSED", "RUNNING"}
+	VALID_BOT_CATEGORIES      = []string{"Security", "Optimization", "Best Practices", "Curation", "Miscellaneous"}
+	VALID_BOT_SEVERITIES      = []string{"High", "Medium", "Low"}
+	VALID_BOT_BADGE_OPERATORS = []string{"OR", "AND"}
 )
 
 func resourceBot() *schema.Resource {
@@ -14,11 +23,6 @@ func resourceBot() *schema.Resource {
 		UpdateContext: resourceBotUpdate,
 		DeleteContext: resourceBotDelete,
 		Schema: map[string]*schema.Schema{
-			"resource_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The resource ID for the bot",
-			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -27,61 +31,154 @@ func resourceBot() *schema.Resource {
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "",
 				Description: "The description for the bot",
 			},
-			"owner": {
-				Type:        schema.TypeString,
-				Description: "The owner ID for whom the bot should belong",
-			},
-			"owner_name": {
-				Type:        schema.TypeString,
-				Description: "The owner of the bot's name",
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The current state of the bot",
-				Default:     "PAUSED",
-			},
-			"event_failures":          {},
-			"valid":                   {Type: schema.TypeBool},
-			"hookpoint_created":       {Type: schema.TypeBool},
-			"hookpoint_tags_modified": {Type: schema.TypeBool},
-			"hookpoint_modified":      {Type: schema.TypeBool},
-			"hookpoint_destroyed":     {Type: schema.TypeBool},
-			"schedule":                {},
-			"next_scheduled_run":      {},
-			"creation_timestamp":      {Type: schema.TypeString},
-			"modified_timestamp":      {Type: schema.TypeString},
-			"category":                {Type: schema.TypeString},
-			"severity":                {Type: schema.TypeString},
-			"detailed_logging":        {Type: schema.TypeBool},
-			"instructions": {
-				Type: schema.TypeSet,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"resource_types": {Type: schema.TypeList},
-						"filters":        {Type: schema.TypeList},
-						"actions":        {Type: schema.TypeList},
-					},
-				},
-			},
-			"source": {Type: schema.TypeString},
-			"insight_id": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The insight ID associated with the bot",
-			},
-			"exemptions_count": {},
 			"notes": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Notes associated with the bot",
 			},
-			"version": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Integer represnting the version of the bot",
+			"state": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "PAUSED",
+				Description: "The current state of the bot.  Defaults to PAUSED",
+			},
+			"badge_state_operator": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "OR",
+				ValidateFunc: validation.StringInSlice(VALID_BOT_BADGE_OPERATORS, false),
+			},
+			"category": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice(VALID_BOT_CATEGORIES, false),
+				Description:  "The category assigned to the bot",
+			},
+			"severity": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice(VALID_BOT_SEVERITIES, false),
+				Description:  "The severity assigned to the bot",
+			},
+			"instructions": {
+				Type: schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"groups": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     schema.TypeString,
+						},
+						"badges": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"resource_types": {
+							Type:     schema.TypeList,
+							Required: true,
+							Elem:     schema.TypeString,
+						},
+						"filters": {
+							Type:     schema.TypeList,
+							Required: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"config": {}, // Need to figure out what these are
+								},
+							},
+						},
+						"actions": {
+							Type:     schema.TypeList,
+							Required: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"config": {}, // Need to figure out what these are
+									"run_when_result_is": {
+										Type:     schema.TypeBool,
+										Required: true,
+									},
+								},
+							},
+						},
+						"hookpoints": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     schema.TypeString,
+						},
+						"schedule": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									// Need to figure out how these change if weekly, daily, hourly, no schedule
+									"_type": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice([]string{"Monthly, Weekly, Daily, Hourly"}, false),
+									},
+									"time_of_day": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"_type": {
+													Type:     schema.TypeString,
+													Required: true,
+												},
+												"second": {
+													Type:         schema.TypeInt,
+													Required:     true,
+													ValidateFunc: validation.IntBetween(0, 59),
+												},
+												"minute": {
+													Type:         schema.TypeInt,
+													Required:     true,
+													ValidateFunc: validation.IntBetween(0, 59),
+												},
+												"hour": {
+													Type:         schema.TypeInt,
+													Required:     true,
+													ValidateFunc: validation.IntBetween(0, 24),
+												},
+											},
+										},
+									},
+									"day_of_month": {
+										Type:     schema.TypeInt,
+										Optional: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"retain_data": {
+				Type:     schema.TypeBool,
+				Required: true,
 			},
 		},
 	}
