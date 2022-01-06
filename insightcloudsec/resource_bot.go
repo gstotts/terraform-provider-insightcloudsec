@@ -64,7 +64,8 @@ func resourceBot() *schema.Resource {
 				Description:  "The severity assigned to the bot",
 			},
 			"instructions": {
-				Type: schema.TypeSet,
+				Type:     schema.TypeSet,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"groups": {
