@@ -2,7 +2,9 @@ package insightcloudsec
 
 import (
 	"context"
+	"log"
 
+	ics "github.com/gstotts/insightcloudsec"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -201,8 +203,27 @@ func resourceBotCreate(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// c := m.(*ics.Client)
+	c := m.(*ics.Client)
 	var diags diag.Diagnostics
+
+	resource_id := d.Get("resource_id").(string)
+	bot, err := c.GetBotByID(resource_id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Println("[DEBUG] Bot Returned from API: \n%", bot)
+
+	// Set attributes
+	d.Set("name", bot.Name)
+	d.Set("description", bot.Description)
+	d.Set("notes", bot.Notes)
+	// Is this worth tracking?  Will it cause issues with running/paused?
+	d.Set("state", bot.State)
+	d.Set("badge_state_operator", bot.BadgeScopeOperator)
+	d.Set("category", bot.Category)
+	d.Set("severity", bot.Severity)
+
+	// Still need more here -- also need to add to above.
 
 	return diags
 }
