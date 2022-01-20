@@ -194,21 +194,29 @@ func resourceBot() *schema.Resource {
 }
 
 func resourceBotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// c := m.(*ics.Client)
 	var diags diag.Diagnostics
+
 	return diags
 }
 
 func resourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// c := m.(*ics.Client)
 	var diags diag.Diagnostics
+
 	return diags
 }
 
 func resourceBotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// c := m.(*ics.Client)
 	var diags diag.Diagnostics
+
 	return diags
 }
 
 func resourceBotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// c := m.(*ics.Client)
 	var diags diag.Diagnostics
+
 	return diags
 }
