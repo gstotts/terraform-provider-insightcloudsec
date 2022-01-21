@@ -180,8 +180,8 @@ github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+
 github.com/googleapis/gax-go/v2 v2.0.5 h1:sjZBwGj9Jlw33ImPtvFviGYvseOtDM7hkSKB7+Tv3SM=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
-github.com/gstotts/insightcloudsec v0.0.18 h1:8ELbmzIv0dFWJ/SeW2CzoQU33HJF5QgMAV0JWhR8V+4=
-github.com/gstotts/insightcloudsec v0.0.18/go.mod h1:0mAQ22ADk5PFon65Q+AdqWMdL2VTBAPjXPHFaGPq/TI=
+github.com/gstotts/insightcloudsec v0.0.19 h1:MXH3YCS/WvqvjHCqvP+31qyQXxeEG02a1ubPLxzoMNI=
+github.com/gstotts/insightcloudsec v0.0.19/go.mod h1:0mAQ22ADk5PFon65Q+AdqWMdL2VTBAPjXPHFaGPq/TI=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
