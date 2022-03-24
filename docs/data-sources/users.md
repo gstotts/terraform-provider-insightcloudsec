@@ -12,7 +12,7 @@ The users data source returns a list of users in the InsightCloudSec console, th
 
 ## Example Usage
 ```terraform
-data "insightcloudsec_users" {}
+data "insightcloudsec_users" "all_users" {}
 
 ```
 
