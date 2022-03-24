@@ -8,6 +8,7 @@ on:
 
 env:
   TF_ACC: 1
+  INSIGHTCLOUDSEC_BASE_URL: ''
 
 jobs:
 
