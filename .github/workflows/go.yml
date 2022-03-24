@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  TF_ACC: ''
+  TF_ACC: 1
 
 jobs:
 
