@@ -12,10 +12,11 @@ import (
 
 var (
 	// Bot Setting Options
-	VALID_BOT_STATES          = []string{"PAUSED", "RUNNING"}
+	VALID_BOT_STATES          = []string{"paused", "running", "archived", "scanning"}
 	VALID_BOT_CATEGORIES      = []string{"Security", "Optimization", "Best Practices", "Curation", "Miscellaneous"}
-	VALID_BOT_SEVERITIES      = []string{"High", "Medium", "Low"}
+	VALID_BOT_SEVERITIES      = []string{"low", "medium", "high"}
 	VALID_BOT_BADGE_OPERATORS = []string{"OR", "AND"}
+	VALID_BOT_HOOKPOINTS      = []string{"divvycloud.resource.created", "divvycloud.resource.tags_modified", "divvycloud.resource.modified", "divvycloud.resource.destroyed", "divvycloud.resource.threat_finding_discovered"}
 )
 
 func resourceBot() *schema.Resource {
@@ -35,11 +36,6 @@ func resourceBot() *schema.Resource {
 				Optional:    true,
 				Default:     "",
 				Description: "The description for the bot",
-			},
-			"notes": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Notes associated with the bot",
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -106,7 +102,7 @@ func resourceBot() *schema.Resource {
 										Required: true,
 									},
 									"config": {
-										Type:     schema.TypeList, // Need to figure out what these are, using string for now
+										Type:     schema.TypeList,
 										Required: true,
 										Elem:     schema.TypeString,
 									},
@@ -123,7 +119,7 @@ func resourceBot() *schema.Resource {
 										Required: true,
 									},
 									"config": {
-										Type:     schema.TypeList, // Need to figure out what these are, using string for now
+										Type:     schema.TypeList,
 										Required: true,
 										Elem:     schema.TypeString,
 									},
@@ -144,11 +140,10 @@ func resourceBot() *schema.Resource {
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									// Need to figure out how these change if weekly, daily, hourly, no schedule
 									"_type": {
 										Type:         schema.TypeString,
 										Required:     true,
-										ValidateFunc: validation.StringInSlice([]string{"Monthly, Weekly, Daily, Hourly"}, false),
+										ValidateFunc: validation.StringInSlice([]string{"monthly, weekly, daily, hourly"}, false),
 									},
 									"time_of_day": {
 										Type:     schema.TypeSet,
@@ -178,6 +173,11 @@ func resourceBot() *schema.Resource {
 										},
 									},
 									"day_of_month": {
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntBetween(1, 31),
+									},
+									"exclude_days": {
 										Type:     schema.TypeInt,
 										Optional: true,
 									},
@@ -187,9 +187,9 @@ func resourceBot() *schema.Resource {
 					},
 				},
 			},
-			"retain_data": {
-				Type:     schema.TypeBool,
-				Required: true,
+			"insight_id": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}
