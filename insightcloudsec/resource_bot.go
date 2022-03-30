@@ -239,5 +239,9 @@ func resourceBotDelete(ctx context.Context, d *schema.ResourceData, m interface{
 	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
+	err := c.ArchiveBot(d.Get("resource_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return diags
 }
