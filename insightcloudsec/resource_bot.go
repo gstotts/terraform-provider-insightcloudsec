@@ -236,7 +236,7 @@ func resourceBotUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceBotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// c := m.(*ics.Client)
+	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
 	return diags
