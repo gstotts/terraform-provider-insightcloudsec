@@ -242,7 +242,7 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 	d.Set("next_scheduled_run", bot.NextScheduled)
 	d.Set("hookpoint_created", bot.HookpointCreated)
 	d.Set("hookpoint_modified", bot.HookpointModified)
-	d.Set("hookpoint_destoryed", bot.HookpointDestroyed)
+	d.Set("hookpoint_destroyed", bot.HookpointDestroyed)
 	d.Set("hookpoint_tags_modified", bot.HookpointTagsModified)
 	d.Set("creation_timestamp", bot.DateCreated)
 	d.Set("modified_timestamp", bot.DateModified)
