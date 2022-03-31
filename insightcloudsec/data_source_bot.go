@@ -236,29 +236,66 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 	d.Set("owner", bot.Owner)
 	d.Set("owner_name", bot.OwnerName)
 	d.Set("state", bot.State)
-
-	// Flatten Event Failures?
-
+	d.Set("errors", bot.Errors.Errors)
+	d.Set("invalid_perms", bot.Errors.InvalidPerms)
+	d.Set("timeouts", bot.Errors.Timeouts)
 	d.Set("valid", bot.Valid)
-
-	//Hookpoints, Schedule / Next Scheduled no longer part of instructions?
-
+	d.Set("schedule", bot.Schedule)
+	d.Set("next_scheduled_run", bot.NextScheduled)
+	d.Set("hookpoint_created", bot.HookpointCreated)
+	d.Set("hookpoint_modified", bot.HookpointModified)
+	d.Set("hookpoint_destoryed", bot.HookpointDestroyed)
+	d.Set("hookpoint_tags_modified", bot.HookpointTagsModified)
 	d.Set("creation_timestamp", bot.DateCreated)
 	d.Set("modified_timestamp", bot.DateModified)
 	d.Set("category", bot.Category)
 	d.Set("severity", bot.Severity)
 	d.Set("detailed_logging", bot.DetailedLogging)
-
-	// Flatten Instructions?
-
+	d.Set("resource_types", bot.Instructions.ResourceTypes)
+	filters := flattenBotFiltersData(&bot.Instructions.Filters)
+	d.Set("filters", filters)
+	actions := flattenBotActionsData(&bot.Instructions.Actions)
+	d.Set("actions", actions)
 	d.Set("source", bot.Source)
 	d.Set("insight_id", bot.InsightID)
-
-	// Exemptions Count not in client?
-	// Consider revising client to return raw responses so can just apply json decoding?
-
+	d.Set("exemptions_count", bot.ExemptionsCount)
 	d.Set("notes", bot.Notes)
-	// Versions not in client?
+	d.Set("version", bot.Version)
 
 	return diags
+}
+
+func flattenBotFiltersData(filters *[]ics.BotFilter) []interface{} {
+	if filters != nil {
+		data := make([]interface{}, len(*filters), len(*filters))
+
+		for i, filter := range *filters {
+			data_b := make(map[string]interface{})
+			data_b["name"] = filter.Name
+			data_b["config"] = filter.Config
+			data[i] = data_b
+		}
+
+		return data
+	}
+
+	return make([]interface{}, 0)
+}
+
+func flattenBotActionsData(actions *[]ics.BotAction) []interface{} {
+	if actions != nil {
+		data := make([]interface{}, len(*actions), len(*actions))
+
+		for i, action := range *actions {
+			data_b := make(map[string]interface{})
+			data_b["name"] = action.Name
+			data_b["config"] = action.Config
+			data_b["run_when_result_is"] = action.RunWhenResultIs
+			data[i] = data_b
+		}
+
+		return data
+	}
+
+	return make([]interface{}, 0)
 }
