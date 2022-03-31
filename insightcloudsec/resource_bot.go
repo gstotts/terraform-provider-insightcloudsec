@@ -217,11 +217,11 @@ func resourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	d.Set("name", bot.Name)
 	d.Set("description", bot.Description)
 	d.Set("notes", bot.Notes)
-	// Is this worth tracking?  Will it cause issues with running/paused?
 	d.Set("state", bot.State)
 	d.Set("badge_state_operator", bot.BadgeScopeOperator)
 	d.Set("category", bot.Category)
 	d.Set("severity", bot.Severity)
+	d.Set("groups", bot.Instructions.Groups)
 
 	// Still need more here -- also need to add to above.
 
