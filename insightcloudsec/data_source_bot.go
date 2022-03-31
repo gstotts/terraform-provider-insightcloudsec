@@ -134,16 +134,16 @@ func dataSourceBot() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"resource_types": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "Resource types to which the bot applies",
 							Elem:        schema.TypeString,
 						},
 						"actions": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "Actions associated with the bot",
-							Elem: schema.Resource{
+							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": {
 										Type:        schema.TypeString,
@@ -154,6 +154,9 @@ func dataSourceBot() *schema.Resource {
 										Type:        schema.TypeMap,
 										Computed:    true,
 										Description: "A map of the configurations for the bot action",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 									},
 									"run_when_result_is": {
 										Type:        schema.TypeBool,
@@ -164,10 +167,10 @@ func dataSourceBot() *schema.Resource {
 							},
 						},
 						"filters": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "The filters utilized in identifying resources for the bot",
-							Elem: schema.Resource{
+							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": {
 										Type:        schema.TypeString,
@@ -209,11 +212,6 @@ func dataSourceBot() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Version number of the bot",
-			},
-			"count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Bot count",
 			},
 		},
 	}
@@ -272,7 +270,7 @@ func flattenBotFiltersData(filters *[]ics.BotFilter) []interface{} {
 		for i, filter := range *filters {
 			data_b := make(map[string]interface{})
 			data_b["name"] = filter.Name
-			data_b["config"] = filter.Config
+			data_b["filter_config"] = filter.Config
 			data[i] = data_b
 		}
 
@@ -289,7 +287,7 @@ func flattenBotActionsData(actions *[]ics.BotAction) []interface{} {
 		for i, action := range *actions {
 			data_b := make(map[string]interface{})
 			data_b["name"] = action.Name
-			data_b["config"] = action.Config
+			data_b["action_config"] = action.Config
 			data_b["run_when_result_is"] = action.RunWhenResultIs
 			data[i] = data_b
 		}
