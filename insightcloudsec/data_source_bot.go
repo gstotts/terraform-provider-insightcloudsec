@@ -228,23 +228,31 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 	d.Set("valid", bot.Valid)
 
 	// Schedule
-	if bot.Schedule != nil {
-		schedule := make(map[string]interface{})
-		schedule["_type"] = bot.Schedule.Type
-		if schedule["_type"] == "Hourly" {
-			schedule["minute_of_hour"] = bot.Schedule.MinuteOfHour
-			schedule["second_of_hour"] = bot.Schedule.SecondOfDay
-		} else if schedule["_type"] == "Daily" {
-
-		} else if schedule["_type"] == "Weekly" {
-
-		} else if schedule["_type"] == "Monthly" {
-
+	schedule := make(map[string]interface{})
+	schedule["_type"] = bot.Schedule.Type
+	if schedule["_type"] == "Hourly" {
+		schedule["minute_of_hour"] = bot.Schedule.MinuteOfHour
+		schedule["second_of_hour"] = bot.Schedule.SecondOfHour
+	} else if schedule["_type"] == "Daily" {
+		schedule["time_of_day"] = map[string]int{
+			"minute": bot.Schedule.TimeOfDay.Minute,
+			"hour":   bot.Schedule.TimeOfDay.Hour,
 		}
-		d.Set("schedule", schedule)
-	} else {
-		d.Set("schedule", nil)
+		schedule["exclude_days"] = bot.Schedule.ExcludeDays
+	} else if schedule["_type"] == "Weekly" {
+		schedule["time_of_day"] = map[string]int{
+			"minute": bot.Schedule.TimeOfDay.Minute,
+			"hour":   bot.Schedule.TimeOfDay.Hour,
+		}
+		schedule["day_of_week"] = bot.Schedule.DayOfWeek
+	} else if schedule["_type"] == "Monthly" {
+		schedule["time_of_day"] = map[string]int{
+			"minute": bot.Schedule.TimeOfDay.Minute,
+			"hour":   bot.Schedule.TimeOfDay.Hour,
+		}
+		schedule["day_of_month"] = bot.Schedule.DayOfMonth
 	}
+	d.Set("schedule", schedule)
 
 	d.Set("next_scheduled_run", bot.NextScheduled)
 	d.Set("hookpoint_created", bot.HookpointCreated)
