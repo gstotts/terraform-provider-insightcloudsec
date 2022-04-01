@@ -44,27 +44,11 @@ func dataSourceBot() *schema.Resource {
 				Description: "The current state of the bot",
 			},
 			"event_failures": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Counts of any event failures for the bot",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"errors": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Error count for the bot",
-						},
-						"timeouts": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Timeout count for the bot",
-						},
-						"invalid_perms": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Invalid permissions count for the bot",
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
 				},
 			},
 			"valid": {
@@ -93,9 +77,12 @@ func dataSourceBot() *schema.Resource {
 				Description: "True if the hookpoint has been destroyed for the bot",
 			},
 			"schedule": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeMap,
 				Computed:    true,
-				Description: "String representing the information for scheduling of the bot",
+				Description: "Map representing the information for scheduling of the bot",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"next_scheduled_run": {
 				Type:        schema.TypeString,
@@ -227,16 +214,20 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	log.Println("[DEBUG] Bot Returned from API: \n%", bot)
+	log.Println("[DEBUG] Bot Returned from API: \n", bot)
+	log.Println("[DEBUG] Schedule: \n", bot.Schedule)
+	log.Println("[DEBUG] EventFailures:", bot.EventFailures.Errors)
 	d.SetId(bot.ResourceID)
 	d.Set("name", bot.Name)
 	d.Set("description", bot.Description)
 	d.Set("owner", bot.Owner)
 	d.Set("owner_name", bot.OwnerName)
 	d.Set("state", bot.State)
-	d.Set("errors", bot.EventFailures.Errors)
-	d.Set("invalid_perms", bot.EventFailures.InvalidPerms)
-	d.Set("timeouts", bot.EventFailures.Timeouts)
+	d.Set("event_failures", map[string]int{
+		"errors":        bot.EventFailures.Errors,
+		"timeouts":      bot.EventFailures.Timeouts,
+		"invalid_perms": bot.EventFailures.InvalidPerms,
+	})
 	d.Set("valid", bot.Valid)
 	d.Set("schedule", bot.Schedule)
 	d.Set("next_scheduled_run", bot.NextScheduled)
@@ -250,10 +241,12 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 	d.Set("severity", bot.Severity)
 	d.Set("detailed_logging", bot.DetailedLogging)
 	d.Set("resource_types", bot.Instructions.ResourceTypes)
-	filters := flattenBotFiltersData(&bot.Instructions.Filters)
-	d.Set("filters", filters)
-	actions := flattenBotActionsData(&bot.Instructions.Actions)
-	d.Set("actions", actions)
+	instructions := make([]interface{}, 0)
+	instructions = append(instructions, map[string]interface{}{
+		"resource_types": bot.Instructions.ResourceTypes,
+		"actions":        flattenBotActionsData(&bot.Instructions.Actions),
+		"filters":        flattenBotFiltersData(&bot.Instructions.Filters),
+	})
 	d.Set("source", bot.Source)
 	d.Set("insight_id", bot.InsightID)
 	d.Set("exemptions_count", bot.ExemptionsCount)
