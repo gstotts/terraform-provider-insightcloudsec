@@ -80,9 +80,6 @@ func dataSourceBot() *schema.Resource {
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Map representing the information for scheduling of the bot",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 			"next_scheduled_run": {
 				Type:        schema.TypeString,
@@ -215,8 +212,8 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	log.Println("[DEBUG] Bot Returned from API: \n", bot)
+
 	log.Println("[DEBUG] Schedule: \n", bot.Schedule)
-	log.Println("[DEBUG] EventFailures:", bot.EventFailures.Errors)
 	d.SetId(bot.ResourceID)
 	d.Set("name", bot.Name)
 	d.Set("description", bot.Description)
@@ -229,7 +226,26 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 		"invalid_perms": bot.EventFailures.InvalidPerms,
 	})
 	d.Set("valid", bot.Valid)
-	d.Set("schedule", bot.Schedule)
+
+	// Schedule
+	if bot.Schedule != nil {
+		schedule := make(map[string]interface{})
+		schedule["_type"] = bot.Schedule.Type
+		if schedule["_type"] == "Hourly" {
+			schedule["minute_of_hour"] = bot.Schedule.MinuteOfHour
+			schedule["second_of_hour"] = bot.Schedule.SecondOfDay
+		} else if schedule["_type"] == "Daily" {
+
+		} else if schedule["_type"] == "Weekly" {
+
+		} else if schedule["_type"] == "Monthly" {
+
+		}
+		d.Set("schedule", schedule)
+	} else {
+		d.Set("schedule", nil)
+	}
+
 	d.Set("next_scheduled_run", bot.NextScheduled)
 	d.Set("hookpoint_created", bot.HookpointCreated)
 	d.Set("hookpoint_modified", bot.HookpointModified)
