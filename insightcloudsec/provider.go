@@ -2,7 +2,6 @@ package insightcloudsec
 
 import (
 	"context"
-	"net/http"
 	"regexp"
 
 	ics "github.com/gstotts/insightcloudsec"
@@ -49,11 +48,8 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	var diags diag.Diagnostics
 
 	if (url != "") && (apiKey != "") {
-		return &ics.Client{
-			APIKey:     apiKey,
-			BaseURL:    url,
-			HttpClient: http.DefaultClient,
-		}, diags
+		c, _ := ics.NewClient(nil)
+		return c, diags
 	}
 
 	return &ics.Client{}, diags

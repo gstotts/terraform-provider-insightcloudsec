@@ -45,7 +45,7 @@ func dataSourceCloudTypesRead(ctx context.Context, d *schema.ResourceData, m int
 	c := m.(*ics.Client)
 
 	var diags diag.Diagnostics
-	ctypes, _ := c.ListCloudTypes()
+	ctypes, _ := c.Clouds.ListTypes()
 
 	typeDetails := make([]interface{}, 0)
 	for _, d := range ctypes.CloudTypes {
