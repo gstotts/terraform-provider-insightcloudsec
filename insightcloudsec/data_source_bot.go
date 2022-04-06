@@ -206,7 +206,7 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 	var diags diag.Diagnostics
 	resource_id := d.Get("resource_id").(string)
 
-	bot, err := c.GetBotByID(resource_id)
+	bot, err := c.Bots.GetBotByID(resource_id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
