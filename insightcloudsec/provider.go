@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 
+	"github.com/gstotts/insightcloudsec"
 	ics "github.com/gstotts/insightcloudsec"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -48,7 +49,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	var diags diag.Diagnostics
 
 	if (url != "") && (apiKey != "") {
-		c, _ := ics.NewClient(nil)
+		config := ics.Config{
+			BaseURL: url,
+			ApiKey:  apiKey,
+		}
+
+		c, err := insightcloudsec.NewClient(&config)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
 		return c, diags
 	}
 
