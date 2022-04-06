@@ -207,7 +207,7 @@ func resourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	var diags diag.Diagnostics
 
 	resource_id := d.Get("resource_id").(string)
-	bot, err := c.GetBotByID(resource_id)
+	bot, err := c.Bots.GetBotByID(resource_id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -239,7 +239,7 @@ func resourceBotDelete(ctx context.Context, d *schema.ResourceData, m interface{
 	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
-	err := c.ArchiveBot(d.Get("resource_id").(string))
+	err := c.Bots.ArchiveBot(d.Get("resource_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
