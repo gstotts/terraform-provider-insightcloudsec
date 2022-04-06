@@ -63,7 +63,7 @@ func dataSourceCloudRead(ctx context.Context, d *schema.ResourceData, m interfac
 	var diags diag.Diagnostics
 	cloud_name := d.Get("name").(string)
 
-	cloud, err := c.GetCloudByName(cloud_name)
+	cloud, err := c.Clouds.GetByName(cloud_name)
 	if err != nil {
 		return diag.FromErr(err)
 	}

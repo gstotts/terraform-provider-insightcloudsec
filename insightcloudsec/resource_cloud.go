@@ -254,7 +254,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		params.SubscriptionID = d.Get("subscription_id").(string)
 		params.ApiKeyOrCert = d.Get("api_key").(string)
 
-		cloud, err = c.AddAzureCloud(ics.AzureCloudAccount{CreationParameters: params})
+		cloud, err = c.Clouds.AddAzureCloud(ics.AzureCloudAccount{CreationParameters: params})
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -289,7 +289,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 			return diag.FromErr(fmt.Errorf("[ERROR] Invalid authentication type,  must be assume_role or instance_assume_role for AWS clouds"))
 		}
 
-		cloud, err = c.AddAWSCloud(ics.AWSCloudAccount{CreationParameters: params})
+		cloud, err = c.Clouds.AddAWSCloud(ics.AWSCloudAccount{CreationParameters: params})
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -311,7 +311,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		params.GCPAuth = gcpCredentialsExpand(d.Get("api_credentials").(*schema.Set))
 		params.Project = d.Get("project").(string)
 
-		cloud, err = c.AddGCPCloud(ics.GCPCloudAccount{CreationParameters: params})
+		cloud, err = c.Clouds.AddGCPCloud(ics.GCPCloudAccount{CreationParameters: params})
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -342,7 +342,7 @@ func resourceCloudRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	cloud, err := c.GetCloudByID(id)
+	cloud, err := c.Clouds.GetByID(id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -405,7 +405,7 @@ func resourceCloudUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	id, _ := strconv.Atoi(d.Id())
 	log.Println("[DEBUG] Updating Cloud ID: ", id)
-	_, err := c.UpdateCloud(id, params)
+	_, err := c.Clouds.Update(id, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -420,7 +420,7 @@ func resourceCloudDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
-	err := c.DeleteCloud(d.Get("resource_id").(string))
+	err := c.Clouds.Delete(d.Get("resource_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
