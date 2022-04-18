@@ -107,8 +107,8 @@ github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
-github.com/gstotts/insightcloudsec v0.4.2 h1:F+wa9Y9DYf0SGdgcW1p+OLLvwS3IaAbj2vMmsQAVpiE=
-github.com/gstotts/insightcloudsec v0.4.2/go.mod h1:7pHMHCXrYeEkbOQfH1bRBwh389T6C5JGAf8pV2BcUAk=
+github.com/gstotts/insightcloudsec v0.4.3 h1:uIuwYMYl5TXB5kJgVfZDt2gDvAwcA68fZGYxNdffW7I=
+github.com/gstotts/insightcloudsec v0.4.3/go.mod h1:7pHMHCXrYeEkbOQfH1bRBwh389T6C5JGAf8pV2BcUAk=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
