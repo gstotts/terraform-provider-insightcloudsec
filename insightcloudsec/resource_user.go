@@ -109,7 +109,8 @@ func resourceUser() *schema.Resource {
 			},
 			"console_access_denied": {
 				Type:        schema.TypeBool,
-				Computed:    true,
+				Required:    true,
+				Default:     false,
 				Description: "Indicates if the user is denied console access",
 			},
 			"active_api_key_present": {
@@ -192,6 +193,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// There is not a method available in the public API to be able to update the information.  You can delete the user and recreate but cannot use the same username.
 	return nil
 }
 
