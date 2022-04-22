@@ -10,6 +10,46 @@ import (
 )
 
 func dataSourceBot() *schema.Resource {
+	i := schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"resource_types": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Resource types to which the bot applies",
+			},
+			// "actions": {
+			// 	Type:        schema.TypeSet,
+			// 	Computed:    true,
+			// 	Description: "Actions the bot will take",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"name": {
+			// 				Type:        schema.TypeString,
+			// 				Computed:    true,
+			// 				Description: "Name of the action",
+			// 			},
+			// 			"config": {
+			// 				Type:        schema.TypeMap,
+			// 				Computed:    true,
+			// 				Description: "Map of action configuration settings",
+			// 			},
+			// 			"run_when_result_is": {
+			// 				Type:        schema.TypeBool,
+			// 				Computed:    true,
+			// 				Description: "Boolean that determins if the actino runs when the condition is met or when it is not met",
+			// 			},
+			// 		},
+			// 	},
+			// },
+			// "hookpoints": {
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Elem:        &schema.Schema{Type: schema.TypeString},
+			// 	Description: "Hookpoints associated with when the bot is to run from EDH",
+			// },
+		},
+	}
 	return &schema.Resource{
 		ReadContext: dataSourceBotRead,
 		Schema: map[string]*schema.Schema{
@@ -28,6 +68,31 @@ func dataSourceBot() *schema.Resource {
 				Computed:    true,
 				Description: "The description assigned to the bot",
 			},
+			"notes": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Notes attached to the bot",
+			},
+			"insight_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Insight id for an associated insight (if exists)",
+			},
+			"source": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Bot source",
+			},
+			"insight_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of associated insight (if exists)",
+			},
+			"insight_severity": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Severity of associated insight (if exists)",
+			},
 			"owner": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -43,159 +108,31 @@ func dataSourceBot() *schema.Resource {
 				Computed:    true,
 				Description: "The current state of the bot",
 			},
-			"event_failures": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Description: "Counts of any event failures for the bot",
-				Elem: &schema.Schema{
-					Type: schema.TypeInt,
-				},
-			},
-			"valid": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether the configuration is valid or not for the bot",
-			},
-			"hookpoint_created": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True if a hookpoint has been created for the bot",
-			},
-			"hookpoint_tags_modified": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True if hookpoint tags have been modified for the bot",
-			},
-			"hookpoint_modified": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True if the hookpoint has been modified for the bot",
-			},
-			"hookpoint_destroyed": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True if the hookpoint has been destroyed for the bot",
-			},
-			"schedule": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Description: "Map representing the information for scheduling of the bot",
-			},
-			"next_scheduled_run": {
+			"date_created": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "String represnting the next scheduled run time",
+				Description: "Date of bot creation",
 			},
-			"creation_timestamp": {
+			"date_modified": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Timestamp for bot creation",
-			},
-			"modified_timestamp": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Timestamp for last bot modification",
+				Description: "Date of bot creation",
 			},
 			"category": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Category assigned to the bot",
+				Description: "Category of the bot",
 			},
-			"severity": {
+			"badge_scope_operator": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Severity assigned to the bot",
-			},
-			"detailed_logging": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates status of detailed logging",
+				Description: "Operator used for badge scoping - AND or OR",
 			},
 			"instructions": {
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Description: "Instructions for bot configuration",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"resource_types": {
-							Type:        schema.TypeSet,
-							Computed:    true,
-							Description: "Resource types to which the bot applies",
-							Elem:        schema.TypeString,
-						},
-						"actions": {
-							Type:        schema.TypeSet,
-							Computed:    true,
-							Description: "Actions associated with the bot",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Name of the bot action",
-									},
-									"config": {
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "A map of the configurations for the bot action",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"run_when_result_is": {
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Whether the bot runs when the config is true or false",
-									},
-								},
-							},
-						},
-						"filters": {
-							Type:        schema.TypeSet,
-							Computed:    true,
-							Description: "The filters utilized in identifying resources for the bot",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The name of the filter being used",
-									},
-									"config": {
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "A map of the configurations for the filter",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			"source": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Bot",
-			},
-			"insight_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Insight id for an associated insight",
-			},
-			"exemptions_count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Number of exemptions associated with the bot or bot insight",
-			},
-			"notes": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Notes attached to the bot",
-			},
-			"version": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Version number of the bot",
+				Type:     schema.TypeSet,
+				Computed: true,
+				Set:      schema.HashResource(&i),
+				Elem:     &i,
 			},
 		},
 	}
@@ -211,106 +148,31 @@ func dataSourceBotRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	log.Println("[DEBUG] Bot Returned from API: \n", bot)
-
-	log.Println("[DEBUG] Schedule: \n", bot.Schedule)
+	log.Println("\n\n[DEBUG] Bot Returned from API: \n", bot)
 	d.SetId(bot.ResourceID)
+	d.Set("resource_id", bot.ResourceID)
 	d.Set("name", bot.Name)
 	d.Set("description", bot.Description)
+	d.Set("notes", bot.Notes)
+	d.Set("insight_id", bot.InsightID)
+	d.Set("source", bot.Source)
+	d.Set("insight_name", bot.InsightName)
+	d.Set("insight_severity", bot.Severity)
 	d.Set("owner", bot.Owner)
 	d.Set("owner_name", bot.OwnerName)
 	d.Set("state", bot.State)
-	d.Set("event_failures", map[string]int{
-		"errors":        bot.EventFailures.Errors,
-		"timeouts":      bot.EventFailures.Timeouts,
-		"invalid_perms": bot.EventFailures.InvalidPerms,
-	})
-	d.Set("valid", bot.Valid)
-
-	// Schedule
-	schedule := make(map[string]interface{})
-	schedule["_type"] = bot.Schedule.Type
-	if schedule["_type"] == "Hourly" {
-		schedule["minute_of_hour"] = bot.Schedule.MinuteOfHour
-		schedule["second_of_hour"] = bot.Schedule.SecondOfHour
-	} else if schedule["_type"] == "Daily" {
-		schedule["time_of_day"] = map[string]int{
-			"minute": bot.Schedule.TimeOfDay.Minute,
-			"hour":   bot.Schedule.TimeOfDay.Hour,
-		}
-		schedule["exclude_days"] = bot.Schedule.ExcludeDays
-	} else if schedule["_type"] == "Weekly" {
-		schedule["time_of_day"] = map[string]int{
-			"minute": bot.Schedule.TimeOfDay.Minute,
-			"hour":   bot.Schedule.TimeOfDay.Hour,
-		}
-		schedule["day_of_week"] = bot.Schedule.DayOfWeek
-	} else if schedule["_type"] == "Monthly" {
-		schedule["time_of_day"] = map[string]int{
-			"minute": bot.Schedule.TimeOfDay.Minute,
-			"hour":   bot.Schedule.TimeOfDay.Hour,
-		}
-		schedule["day_of_month"] = bot.Schedule.DayOfMonth
-	}
-	d.Set("schedule", schedule)
-
-	d.Set("next_scheduled_run", bot.NextScheduled)
-	d.Set("hookpoint_created", bot.HookpointCreated)
-	d.Set("hookpoint_modified", bot.HookpointModified)
-	d.Set("hookpoint_destroyed", bot.HookpointDestroyed)
-	d.Set("hookpoint_tags_modified", bot.HookpointTagsModified)
-	d.Set("creation_timestamp", bot.DateCreated)
-	d.Set("modified_timestamp", bot.DateModified)
+	d.Set("date_created", bot.DateCreated)
+	d.Set("date_modified", bot.DateModified)
 	d.Set("category", bot.Category)
-	d.Set("severity", bot.Severity)
-	d.Set("detailed_logging", bot.DetailedLogging)
-	d.Set("resource_types", bot.Instructions.ResourceTypes)
-	instructions := make([]interface{}, 0)
-	instructions = append(instructions, map[string]interface{}{
+	d.Set("badge_scope_operator", bot.BadgeScopeOperator)
+
+	instructs := []map[string]interface{}{}
+	instructs = append(instructs, map[string]interface{}{
 		"resource_types": bot.Instructions.ResourceTypes,
-		"actions":        flattenBotActionsData(&bot.Instructions.Actions),
-		"filters":        flattenBotFiltersData(&bot.Instructions.Filters),
+		// "actions":        bot.Instructions.Actions,
 	})
-	d.Set("source", bot.Source)
-	d.Set("insight_id", bot.InsightID)
-	d.Set("exemptions_count", bot.ExemptionsCount)
-	d.Set("notes", bot.Notes)
-	d.Set("version", bot.Version)
+
+	d.Set("instructions", instructs)
 
 	return diags
-}
-
-func flattenBotFiltersData(filters *[]ics.BotFilter) []interface{} {
-	if filters != nil {
-		data := make([]interface{}, len(*filters), len(*filters))
-
-		for i, filter := range *filters {
-			data_b := make(map[string]interface{})
-			data_b["name"] = filter.Name
-			data_b["filter_config"] = filter.Config
-			data[i] = data_b
-		}
-
-		return data
-	}
-
-	return make([]interface{}, 0)
-}
-
-func flattenBotActionsData(actions *[]ics.BotAction) []interface{} {
-	if actions != nil {
-		data := make([]interface{}, len(*actions), len(*actions))
-
-		for i, action := range *actions {
-			data_b := make(map[string]interface{})
-			data_b["name"] = action.Name
-			data_b["action_config"] = action.Config
-			data_b["run_when_result_is"] = action.RunWhenResultIs
-			data[i] = data_b
-		}
-
-		return data
-	}
-
-	return make([]interface{}, 0)
 }
