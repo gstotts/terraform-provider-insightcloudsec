@@ -1,5 +1,5 @@
 # InsightCloudSec Terraform Provider
-[![CodeQL](https://github.com/gstotts/terraform-provider-insightcloudsec/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/gstotts/terraform-provider-insightcloudsec/actions/workflows/codeql-analysis.yml)
+[![Go](https://github.com/gstotts/terraform-provider-insightcloudsec/actions/workflows/go.yml/badge.svg)](https://github.com/gstotts/terraform-provider-insightcloudsec/actions/workflows/go.yml) [![CodeQL](https://github.com/gstotts/terraform-provider-insightcloudsec/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/gstotts/terraform-provider-insightcloudsec/actions/workflows/codeql-analysis.yml)
 
 
 # About
