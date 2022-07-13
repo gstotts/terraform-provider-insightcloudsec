@@ -25,4 +25,5 @@ jobs:
         stale-pr-message: 'This pull request is being marked Stale due to inactivity.'
         stale-issue-label: 'stale'
         stale-pr-label: 'stale'
+        days-before-issue-stale: 14
         days-before-pr-close: -1
