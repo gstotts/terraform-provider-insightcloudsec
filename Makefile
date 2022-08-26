@@ -3,7 +3,7 @@ HOSTNAME=gregorystotts.com
 NAMESPACE=com
 NAME=insightcloudsec
 BINARY=terraform-provider-${NAME}
-VERSION=0.2.1
+VERSION=0.3.2
 OS_ARCH=darwin_arm64
 
 default: install
