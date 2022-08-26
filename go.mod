@@ -1,6 +1,6 @@
 module terraform-provider-insightcloudsec
 
-go 1.19
+go 1.18
 
 require (
 	github.com/gstotts/insightcloudsec v0.4.3
