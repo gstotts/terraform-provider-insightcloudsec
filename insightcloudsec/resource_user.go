@@ -110,7 +110,6 @@ func resourceUser() *schema.Resource {
 			"console_access_denied": {
 				Type:        schema.TypeBool,
 				Required:    true,
-				Default:     false,
 				Description: "Indicates if the user is denied console access",
 			},
 			"active_api_key_present": {
