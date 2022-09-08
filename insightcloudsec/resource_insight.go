@@ -104,7 +104,38 @@ func resourceInsight() *schema.Resource {
 }
 
 func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*ics.Client)
 	var diags diag.Diagnostics
+
+	filters := d.Get("filters").([]interface{})
+	fis := []ics.InsightFilter{}
+
+	for _, filter := range filters {
+		i := filter.(map[string]interface{})
+		fi := ics.InsightFilter{
+			Name:        i["name"].(string),
+			Config:      i["config"].(map[string]interface{}),
+			Collections: i["collections"].(map[string]interface{}),
+		}
+		fis = append(fis, fi)
+	}
+	insight := ics.Insight{
+		Name:                d.Get("name").(string),
+		Description:         d.Get("description").(string),
+		Severity:            d.Get("severity").(int),
+		Scopes:              d.Get("scopes").([]string),
+		Tags:                d.Get("tags").([]string),
+		ResourceTypes:       d.Get("resource_types").([]string),
+		Filters:             fis,
+		Badges:              d.Get("badges").([]string),
+		BadgeFilterOperator: "",
+	}
+
+	err := c.Insights.Create(insight)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 
@@ -112,7 +143,7 @@ func resourceInsightRead(ctx context.Context, d *schema.ResourceData, m interfac
 	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
-	insight, err := c.Insights.Get_Insight(d.Get("id").(int), d.Get("source").(string))
+	insight, err := c.Insights.Get_Insight(d.Get("id").(int), "custom")
 	if err != nil {
 		return diag.FromErr(err)
 	}
