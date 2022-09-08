@@ -2,6 +2,7 @@ package insightcloudsec
 
 import (
 	"context"
+	"strconv"
 
 	ics "github.com/gstotts/insightcloudsec"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -131,11 +132,13 @@ func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interf
 		BadgeFilterOperator: "",
 	}
 
-	err := c.Insights.Create(insight)
+	resp, err := c.Insights.Create(insight)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	d.SetId(strconv.Itoa(resp.ID))
+	resourceInsightRead(ctx, d, m)
 	return diags
 }
 
