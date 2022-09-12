@@ -2,9 +2,11 @@ package insightcloudsec
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	ics "github.com/gstotts/insightcloudsec"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -18,7 +20,7 @@ func resourceInsight() *schema.Resource {
 		DeleteContext: resourceInsightDelete,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID assigned to the insight.",
 			},
@@ -48,7 +50,7 @@ func resourceInsight() *schema.Resource {
 				},
 			},
 			"filter": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				Description: "Filter used with the insight to determine resources",
 				Elem: &schema.Resource{
@@ -60,12 +62,12 @@ func resourceInsight() *schema.Resource {
 						},
 						"config": {
 							Type:        schema.TypeMap,
-							Required:    true,
+							Optional:    true,
 							Description: "The configuration of the filter",
 						},
 						"collections": {
 							Type:        schema.TypeMap,
-							Required:    true,
+							Optional:    true,
 							Description: "The collections associated with the filter",
 						},
 					},
@@ -75,8 +77,17 @@ func resourceInsight() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Tags to associate with the insight",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
 				},
 			},
 			"badges": {
@@ -91,6 +102,7 @@ func resourceInsight() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The badge filter operator for the insight",
+				Default:     "OR",
 			},
 			"resource_types": {
 				Type:        schema.TypeList,
@@ -108,7 +120,7 @@ func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interf
 	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
-	filters := d.Get("filters").([]interface{})
+	filters := d.Get("filter").([]interface{})
 	fis := []ics.InsightFilter{}
 
 	for _, filter := range filters {
@@ -120,16 +132,21 @@ func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interf
 		}
 		fis = append(fis, fi)
 	}
+
+	// scopes := interfaceToList(d.Get("scopes").([]interface{}))
+	// tags := interfaceToList(d.Get("tags").([]interface{}))
+	// badges := interfaceToList(d.Get("badges").([]interface{}))
+	resourcetypes := interfaceToList(d.Get("resource_types").([]interface{}))
+
+	tflog.Debug(ctx, fmt.Sprintf("%s", resourcetypes))
+
 	insight := ics.Insight{
 		Name:                d.Get("name").(string),
 		Description:         d.Get("description").(string),
 		Severity:            d.Get("severity").(int),
-		Scopes:              d.Get("scopes").([]string),
-		Tags:                d.Get("tags").([]string),
-		ResourceTypes:       d.Get("resource_types").([]string),
+		ResourceTypes:       resourcetypes,
 		Filters:             fis,
-		Badges:              d.Get("badges").([]string),
-		BadgeFilterOperator: "",
+		BadgeFilterOperator: d.Get("badge_filter_operator").(string),
 	}
 
 	resp, err := c.Insights.Create(insight)
@@ -146,7 +163,8 @@ func resourceInsightRead(ctx context.Context, d *schema.ResourceData, m interfac
 	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
-	insight, err := c.Insights.Get_Insight(d.Get("id").(int), "custom")
+	id, _ := strconv.Atoi(d.Get("id").(string))
+	insight, err := c.Insights.Get_Insight(id, "custom")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -154,10 +172,10 @@ func resourceInsightRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("name", insight.Name)
 	d.Set("description", insight.Description)
 	d.Set("severity", insight.Severity)
-	d.Set("scopes", insight.Scopes)
 	d.Set("filter", insight.Filters)
-	d.Set("tags", insight.Tags)
-	d.Set("badges", insight.Badges)
+	// d.Set("scopes", insight.Scopes)
+	// d.Set("tags", insight.Tags)
+	// d.Set("badges", insight.Badges)
 	d.Set("badge_filter_operator", insight.BadgeFilterOperator)
 	d.Set("resource_types", insight.ResourceTypes)
 
@@ -172,4 +190,12 @@ func resourceInsightUpdate(ctx context.Context, d *schema.ResourceData, m interf
 func resourceInsightDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diag diag.Diagnostics
 	return diag
+}
+
+func interfaceToList(i []interface{}) []string {
+	s := make([]string, 0, len(i))
+	for _, item := range i {
+		s = append(s, item.(string))
+	}
+	return s
 }
