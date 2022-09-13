@@ -83,12 +83,23 @@ func resourceInsight() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"badges": {
+			"badge": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Badges used to limit the insight",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Key for the badge",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value for the badge",
+						},
+					},
 				},
 			},
 			"badge_filter_operator": {
@@ -126,6 +137,17 @@ func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interf
 		fis = append(fis, fi)
 	}
 
+	badges := d.Get("badge").([]interface{})
+	bis := []ics.Badge{}
+	for _, badge := range badges {
+		b := badge.(map[string]interface{})
+		bi := ics.Badge{
+			Key:   b["key"].(string),
+			Value: b["value"].(string),
+		}
+		bis = append(bis, bi)
+	}
+
 	insight := ics.Insight{
 		Name:                d.Get("name").(string),
 		Description:         d.Get("description").(string),
@@ -134,7 +156,7 @@ func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interf
 		Filters:             fis,
 		Tags:                interfaceToList(d.Get("tags").([]interface{})),
 		Scopes:              interfaceToList(d.Get("scopes").([]interface{})),
-		Badges:              interfaceToList(d.Get("badges").([]interface{})),
+		Badges:              bis,
 		BadgeFilterOperator: d.Get("badge_filter_operator").(string),
 	}
 
