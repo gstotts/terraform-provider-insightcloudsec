@@ -63,11 +63,13 @@ func resourceInsight() *schema.Resource {
 						"config": {
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "The configuration of the filter",
 						},
 						"collections": {
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "The collections associated with the filter",
 						},
 					},
@@ -77,17 +79,8 @@ func resourceInsight() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Tags to associate with the insight",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"badges": {
@@ -101,8 +94,8 @@ func resourceInsight() *schema.Resource {
 			"badge_filter_operator": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The badge filter operator for the insight",
-				Default:     "OR",
 			},
 			"resource_types": {
 				Type:        schema.TypeList,
@@ -133,26 +126,30 @@ func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interf
 		fis = append(fis, fi)
 	}
 
-	// scopes := interfaceToList(d.Get("scopes").([]interface{}))
-	// tags := interfaceToList(d.Get("tags").([]interface{}))
-	// badges := interfaceToList(d.Get("badges").([]interface{}))
-	resourcetypes := interfaceToList(d.Get("resource_types").([]interface{}))
-
-	tflog.Debug(ctx, fmt.Sprintf("%s", resourcetypes))
-
 	insight := ics.Insight{
 		Name:                d.Get("name").(string),
 		Description:         d.Get("description").(string),
 		Severity:            d.Get("severity").(int),
-		ResourceTypes:       resourcetypes,
+		ResourceTypes:       interfaceToList(d.Get("resource_types").([]interface{})),
 		Filters:             fis,
+		Tags:                interfaceToList(d.Get("tags").([]interface{})),
+		Scopes:              interfaceToList(d.Get("scopes").([]interface{})),
+		Badges:              interfaceToList(d.Get("badges").([]interface{})),
 		BadgeFilterOperator: d.Get("badge_filter_operator").(string),
 	}
+
+	tflog.Debug(ctx, fmt.Sprintf(
+		"Insight Details to Create:\n%v\n", insight,
+	))
 
 	resp, err := c.Insights.Create(insight)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	tflog.Debug(ctx, fmt.Sprintf(
+		"Response Data from API:\n%v\n", resp,
+	))
 
 	d.SetId(strconv.Itoa(resp.ID))
 	resourceInsightRead(ctx, d, m)
@@ -172,10 +169,20 @@ func resourceInsightRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("name", insight.Name)
 	d.Set("description", insight.Description)
 	d.Set("severity", insight.Severity)
+
+	for _, filter := range insight.Filters {
+		if filter.Config == nil {
+			filter.Config = make(map[string]interface{}, 0)
+		}
+		if filter.Collections == nil {
+			filter.Collections = make(map[string]interface{}, 0)
+		}
+	}
+
 	d.Set("filter", insight.Filters)
-	// d.Set("scopes", insight.Scopes)
-	// d.Set("tags", insight.Tags)
-	// d.Set("badges", insight.Badges)
+	d.Set("scopes", insight.Scopes)
+	d.Set("tags", insight.Tags)
+	d.Set("badges", insight.Badges)
 	d.Set("badge_filter_operator", insight.BadgeFilterOperator)
 	d.Set("resource_types", insight.ResourceTypes)
 
