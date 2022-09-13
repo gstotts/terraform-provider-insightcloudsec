@@ -217,8 +217,15 @@ func resourceInsightUpdate(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceInsightDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diag diag.Diagnostics
-	return diag
+	c := m.(*ics.Client)
+	var diags diag.Diagnostics
+
+	id, _ := strconv.Atoi(d.Get("id").(string))
+	err := c.Insights.Delete(id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func interfaceToList(i []interface{}) []string {
