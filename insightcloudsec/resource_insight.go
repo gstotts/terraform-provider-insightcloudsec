@@ -18,6 +18,9 @@ func resourceInsight() *schema.Resource {
 		ReadContext:   resourceInsightRead,
 		UpdateContext: resourceInsightUpdate,
 		DeleteContext: resourceInsightDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
