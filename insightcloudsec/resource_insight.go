@@ -124,41 +124,7 @@ func resourceInsightCreate(ctx context.Context, d *schema.ResourceData, m interf
 	c := m.(*ics.Client)
 	var diags diag.Diagnostics
 
-	filters := d.Get("filter").([]interface{})
-	fis := []ics.InsightFilter{}
-
-	for _, filter := range filters {
-		i := filter.(map[string]interface{})
-		fi := ics.InsightFilter{
-			Name:        i["name"].(string),
-			Config:      i["config"].(map[string]interface{}),
-			Collections: i["collections"].(map[string]interface{}),
-		}
-		fis = append(fis, fi)
-	}
-
-	badges := d.Get("badge").([]interface{})
-	bis := []ics.Badge{}
-	for _, badge := range badges {
-		b := badge.(map[string]interface{})
-		bi := ics.Badge{
-			Key:   b["key"].(string),
-			Value: b["value"].(string),
-		}
-		bis = append(bis, bi)
-	}
-
-	insight := ics.Insight{
-		Name:                d.Get("name").(string),
-		Description:         d.Get("description").(string),
-		Severity:            d.Get("severity").(int),
-		ResourceTypes:       interfaceToList(d.Get("resource_types").([]interface{})),
-		Filters:             fis,
-		Tags:                interfaceToList(d.Get("tags").([]interface{})),
-		Scopes:              interfaceToList(d.Get("scopes").([]interface{})),
-		Badges:              bis,
-		BadgeFilterOperator: d.Get("badge_filter_operator").(string),
-	}
+	insight := prepareInsight(d)
 
 	tflog.Debug(ctx, fmt.Sprintf(
 		"Insight Details to Create:\n%v\n", insight,
@@ -216,7 +182,9 @@ func resourceInsightUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	var diags diag.Diagnostics
 
 	id, _ := strconv.Atoi(d.Get("id").(string))
-	err := c.Insights.()
+	insight := prepareInsight(d)
+	insight.ID = id
+	err := c.Insights.Edit(insight)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -241,4 +209,43 @@ func interfaceToList(i []interface{}) []string {
 		s = append(s, item.(string))
 	}
 	return s
+}
+
+func prepareInsight(d *schema.ResourceData) ics.Insight {
+	filters := d.Get("filter").([]interface{})
+	fis := []ics.InsightFilter{}
+
+	for _, filter := range filters {
+		i := filter.(map[string]interface{})
+		fi := ics.InsightFilter{
+			Name:        i["name"].(string),
+			Config:      i["config"].(map[string]interface{}),
+			Collections: i["collections"].(map[string]interface{}),
+		}
+		fis = append(fis, fi)
+	}
+
+	badges := d.Get("badge").([]interface{})
+	bis := []ics.Badge{}
+	for _, badge := range badges {
+		b := badge.(map[string]interface{})
+		bi := ics.Badge{
+			Key:   b["key"].(string),
+			Value: b["value"].(string),
+		}
+		bis = append(bis, bi)
+	}
+
+	return ics.Insight{
+		Name:                d.Get("name").(string),
+		Description:         d.Get("description").(string),
+		Severity:            d.Get("severity").(int),
+		ResourceTypes:       interfaceToList(d.Get("resource_types").([]interface{})),
+		Filters:             fis,
+		Tags:                interfaceToList(d.Get("tags").([]interface{})),
+		Scopes:              interfaceToList(d.Get("scopes").([]interface{})),
+		Badges:              bis,
+		BadgeFilterOperator: d.Get("badge_filter_operator").(string),
+	}
+
 }
