@@ -4,7 +4,6 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/gstotts/insightcloudsec"
 	ics "github.com/gstotts/insightcloudsec"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,7 +30,8 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"insightcloudsec_cloud": resourceCloud(),
+			"insightcloudsec_cloud":          resourceCloud(),
+			"insightcloudsec_custom_insight": resourceInsight(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"insightcloudsec_cloud":       datasSourceCloud(),
@@ -54,7 +54,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 			ApiKey:  apiKey,
 		}
 
-		c, err := insightcloudsec.NewClient(&config)
+		c, err := ics.NewClient(&config)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
