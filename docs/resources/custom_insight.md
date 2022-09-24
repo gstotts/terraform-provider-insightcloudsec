@@ -6,7 +6,7 @@ description: |-
   Provides details on a custom_insight configuration for InsightCloudSec.
 ---
 
-# insightcloudsec_custom_insight (Resource)
+# insightcloudsec_custom_insight
 
 Provides details on a custom insight configuration for InsightCloudSec.  This is only for customer created insights -- built-in insights cannot be managed.
 
@@ -19,15 +19,15 @@ resource insightcloudsec_custom_insight "my-insight" {
     resource_types = ["divvyorganizationservice"]
     filter {
             name = "divvy.filter.cloud_trail_in_all_regions"
-        }
+    }
     
-    scopes = ["divvyorganizationservice:4"]
+    scopes = ["divvyorganizationservice:0"]
     tags = ["Test"]
+    
     badge {
         key = "cloud_org_path"
         value = "/Root"
     }
-
     badge_filter_operator = "OR"
 }
 ```
