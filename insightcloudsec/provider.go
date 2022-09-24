@@ -30,8 +30,8 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"insightcloudsec_cloud":   resourceCloud(),
-			"insightcloudsec_insight": resourceInsight(),
+			"insightcloudsec_cloud":          resourceCloud(),
+			"insightcloudsec_custom_insight": resourceInsight(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"insightcloudsec_cloud":       datasSourceCloud(),
