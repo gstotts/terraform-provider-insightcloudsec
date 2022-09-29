@@ -3,12 +3,12 @@ package insightcloudsec
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	ics "github.com/gstotts/insightcloudsec"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -267,7 +267,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 			return diags
 		}
 
-		log.Println("[DEBUG] Azure Cloud Returned from API: \n%", cloud)
+		tflog.Debug(ctx, fmt.Sprintf("Azure Cloud Returned from API: \n%v\n", cloud))
 	}
 
 	// AWS Cloud Accounts
@@ -284,7 +284,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 			// AWS STS Assume Role (Instance Assume does not require)
 			params.ApiKeyOrCert = d.Get("api_key").(string)
 			params.SecretKey = d.Get("secret_key").(string)
-			log.Println("[DEBUG] Setting up Assume Role for: ", params.Name)
+			tflog.Debug(ctx, fmt.Sprintf("Setting up Assume Role for: %s", params.Name))
 		} else if auth_type != "instance_assume_role" {
 			return diag.FromErr(fmt.Errorf("[ERROR] Invalid authentication type,  must be assume_role or instance_assume_role for AWS clouds"))
 		}
@@ -302,7 +302,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 			return diags
 		}
 
-		log.Println("[DEBUG] AWS Cloud Returned from API: \n%", cloud)
+		tflog.Debug(ctx, fmt.Sprintf("AWS Cloud Returned from API: \n%v", cloud))
 	}
 
 	// GCE Cloud Accounts
@@ -324,7 +324,7 @@ func resourceCloudCreate(ctx context.Context, d *schema.ResourceData, m interfac
 			return diags
 		}
 
-		log.Println("[DEBUG] GCP Cloud Returned from API: \n%", cloud)
+		tflog.Debug(ctx, fmt.Sprintf("GCP Cloud Returned from API: \n%v", cloud))
 	}
 
 	d.SetId(strconv.Itoa(cloud.ID))
@@ -404,7 +404,7 @@ func resourceCloudUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	id, _ := strconv.Atoi(d.Id())
-	log.Println("[DEBUG] Updating Cloud ID: ", id)
+	tflog.Debug(ctx, fmt.Sprintf("Updating Cloud ID: \n%v\n", id))
 	_, err := c.Clouds.Update(id, params)
 	if err != nil {
 		return diag.FromErr(err)

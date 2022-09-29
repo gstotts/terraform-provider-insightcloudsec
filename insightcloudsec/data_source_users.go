@@ -2,11 +2,12 @@ package insightcloudsec
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strconv"
 	"time"
 
 	ics "github.com/gstotts/insightcloudsec"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -153,7 +154,7 @@ func dataSourceUsersRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	log.Println("[DEBUG] Users Returned from API: \n%", users)
+	tflog.Debug(ctx, fmt.Sprintf("Users Returned from API: \n%v\n", users))
 
 	d.Set("total_count", users.Count)
 

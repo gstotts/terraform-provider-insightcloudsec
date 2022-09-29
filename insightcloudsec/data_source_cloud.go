@@ -2,10 +2,11 @@ package insightcloudsec
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strconv"
 
 	ics "github.com/gstotts/insightcloudsec"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -68,7 +69,7 @@ func dataSourceCloudRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	log.Println("[DEBUG] Cloud Returned from API: \n%", cloud)
+	tflog.Debug(ctx, fmt.Sprintf("Cloud Returned from API: \n%v\n", cloud))
 
 	d.Set("name", cloud.Name)
 	d.Set("cloud_type", cloud.CloudTypeID)
