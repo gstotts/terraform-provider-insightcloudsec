@@ -46,6 +46,7 @@ func resourceUser() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 				Description: "The password for the user",
+				ForceNew:    true,
 			},
 			"access_level": {
 				Type:             schema.TypeString,
@@ -55,6 +56,7 @@ func resourceUser() *schema.Resource {
 			},
 			"two_factor_enabled": {
 				Type:        schema.TypeBool,
+				Optional:    true,
 				Computed:    true,
 				Default:     false,
 				Description: "Boolean representing if 2FA is enabled for the user",
@@ -74,43 +76,10 @@ func resourceUser() *schema.Resource {
 				Optional:    true,
 				Description: "The organization name to which the user belongs",
 			},
-			"domain_admin": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Default:     false,
-				Description: "Boolean representing if the user is a domain admin",
-			},
-			// Both attributes below are only computed -- cannot be configured.
-			// For now, these are not included as tracking them would result in changes uncontrollable to the user directly.
-			// --------------
-			// "groups": {
-			// 	Type:        schema.TypeInt,
-			// 	Computed:    true,
-			// 	Description: "Int representing the number of groups associated",
-			// },
-			// "owned_resources": {
-			// 	Type:        schema.TypeInt,
-			// 	Computed:    true,
-			// 	Description: "Int representing the number of owned resources",
-			// },
 			"resource_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The resource_id for the user",
-			},
-			"suspended": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Default:     false,
-				Description: "Boolean representing if user is suspended",
-			},
-			"require_pw_reset": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Default:     false,
-				Description: "Boolean representing if a user's password is required to be reset",
 			},
 			"console_access_denied": {
 				Type:        schema.TypeBool,
@@ -146,10 +115,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("two_factor_enabled", user.TwoFactorEnabled)
 	d.Set("two_factor_required", user.TwoFactorRequired)
 	d.Set("organization_name", user.Org)
-	d.Set("domain_admin", user.DomainAdmin)
 	d.Set("resource_id", user.ResourceID)
-	d.Set("suspended", user.Suspended)
-	d.Set("require_pw_reset", user.RequirePWReset)
 	d.Set("console_access_denied", user.ConsoleAccessDenied)
 
 	return diags
@@ -180,6 +146,39 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+	c := m.(*ics.Client)
+
+	d.Partial(true)
+
+	if d.HasChanges("name", "email_address", "username", "access_level") {
+		// Implement the basic user info changes here
+		return diags
+	}
+
+	if d.HasChange("two_factor_enabled") {
+		if d.Get("two_factor_enabled").(bool) {
+			err := c.Users.Disable2FA(d.Get("user_id").(int32))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Cannot Enable 2FA",
+				Detail:   "2FA can only be enabled by the user.  This attribute is only for disabling.",
+			})
+			return diags
+		}
+	}
+
+	if d.HasChange("console_access_denied") {
+		err := c.Users.SetConsoleAccess(d.Get("user_id").(int), d.Get("console_access_denied").(bool))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	d.Partial(false)
 
 	return diags
 }
