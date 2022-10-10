@@ -157,6 +157,23 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+	c := m.(*ics.Client)
+
+	user, err := c.Users.Create(ics.User{
+		Name:              d.Get("name").(string),
+		Username:          d.Get("username").(string),
+		Email:             d.Get("email_address").(string),
+		Password:          d.Get("password").(string),
+		ConfirmPassword:   d.Get("password").(string),
+		TwoFactorRequired: d.Get("two_factor_required").(bool),
+		AccessLevel:       d.Get("access_level").(string),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.Set("user_id", user.ID)
+	resourceUserRead(ctx, d, m)
 
 	return diags
 }
@@ -169,6 +186,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
+	c := m.(*ics.Client)
+	err := c.Users.Delete(d.Get("resource_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return diags
 }
