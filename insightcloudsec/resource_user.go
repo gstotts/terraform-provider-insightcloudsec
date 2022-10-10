@@ -57,7 +57,6 @@ func resourceUser() *schema.Resource {
 			"two_factor_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
 				Default:     false,
 				Description: "Boolean representing if 2FA is enabled for the user",
 			},
