@@ -180,6 +180,8 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 	d.Partial(false)
 
+	resourceUserRead(ctx, d, m)
+
 	return diags
 }
 
