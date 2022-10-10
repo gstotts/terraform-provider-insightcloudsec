@@ -84,7 +84,6 @@ func resourceUser() *schema.Resource {
 			"console_access_denied": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
 				Default:     false,
 				Description: "Boolean representing if a user's console access is currently denied",
 			},
