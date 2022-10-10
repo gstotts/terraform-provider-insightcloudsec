@@ -3,6 +3,7 @@ package insightcloudsec
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -75,10 +76,10 @@ func resourceCloud() *schema.Resource {
 				Description: "The harvesting strategy ID for the cloud",
 			},
 			"cloud_type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"AWS", "AZURE_ARM", "GCE"}, false),
-				Description:  "The type of cloud being provisioned.  Supported Options: AWS, AZURE_ARM, GCE",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"AWS", "AZURE_ARM", "GCE"}, false)),
+				Description:      "The type of cloud being provisioned.  Supported Options: AWS, AZURE_ARM, GCE",
 			},
 			"tenant_id": {
 				Type:          schema.TypeString,
@@ -118,12 +119,12 @@ func resourceCloud() *schema.Resource {
 				Description:   "The account number associated with the cloud for AWS cloud types",
 			},
 			"authentication_type": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: AZR_AND_GCP_ATTR,
-				RequiredWith:  AWS_ONLY_ATTR,
-				ValidateFunc:  validation.StringInSlice([]string{"assume_role", "instance_assume_role"}, false),
-				Description:   "The authentication type for use with AWS cloud types.  Supportred Options: assume_role or instance_assume_role",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ConflictsWith:    AZR_AND_GCP_ATTR,
+				RequiredWith:     AWS_ONLY_ATTR,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"assume_role", "instance_assume_role"}, false)),
+				Description:      "The authentication type for use with AWS cloud types.  Supportred Options: assume_role or instance_assume_role",
 			},
 			"role_arn": {
 				Type:          schema.TypeString,
@@ -189,9 +190,10 @@ func resourceCloud() *schema.Resource {
 							RequiredWith: GCE_ONLY_ATTR,
 						},
 						"client_email": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							RequiredWith: GCE_ONLY_ATTR,
+							Type:             schema.TypeString,
+							Optional:         true,
+							RequiredWith:     GCE_ONLY_ATTR,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringMatch(regexp.MustCompile(`[\w+=,.-]+@[\w.-]+\.[\w]+`), "must be a valid email address")),
 						},
 						"client_id": {
 							Type:         schema.TypeString,
