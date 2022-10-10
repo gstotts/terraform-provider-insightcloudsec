@@ -151,8 +151,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	d.Partial(true)
 
 	if d.HasChanges("name", "email_address", "username", "access_level") {
-		// Implement the basic user info changes here
-		return diags
+		_, err := c.Users.UpdateUserInfo(d.Get("user_id").(int), d.Get("name").(string), d.Get("username").(string), d.Get("email_address").(string), d.Get("access_level").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChange("two_factor_enabled") {
