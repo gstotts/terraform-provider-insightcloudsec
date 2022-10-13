@@ -151,15 +151,21 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	c := m.(*ics.Client)
 
-	if d.HasChanges("name", "email_address", "username", "access_level") {
-		if d.Get("access_level").(string) != "DOMAIN_ADMIN" || d.Get("access_level").(string) != "DOMAIN_VIEWER" {
+	if d.HasChanges("name", "email_address", "username") {
+		_, err := c.Users.UpdateUserInfo(d.Get("user_id").(int), d.Get("name").(string), d.Get("username").(string), d.Get("email_address").(string), d.Get("access_level").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("access_level") {
+		access_level := d.Get("access_level").(string)
+		if access_level == "BASIC_USER" || access_level == "ORGANIZATION_ADMIN" {
 			_, err := c.Users.UpdateUserInfo(d.Get("user_id").(int), d.Get("name").(string), d.Get("username").(string), d.Get("email_address").(string), d.Get("access_level").(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-
 		} else {
-			// Handle different call to go from org/basic level to domain level permissions (promote via /v2/public/user/divvyuser:%d:/edit-access-level giving current and desired payload)
 			in_state, desired := d.GetChange("access_level")
 			_, err := c.Users.EditAccessLevel(d.Get("user_id").(int), in_state.(string), desired.(string))
 			if err != nil {
