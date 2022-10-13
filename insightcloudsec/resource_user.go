@@ -2,9 +2,11 @@ package insightcloudsec
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	ics "github.com/gstotts/insightcloudsec"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -72,7 +74,7 @@ func resourceUser() *schema.Resource {
 			},
 			"organization_name": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The organization name to which the user belongs",
 			},
 			"resource_id": {
@@ -98,6 +100,8 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 
+	tflog.Debug(ctx, fmt.Sprintf("\n\nUser Returned from API:\n%v", user))
+
 	d.Set("name", user.Name)
 	d.Set("email_address", user.Email)
 	d.Set("username", user.Username)
@@ -115,7 +119,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("organization_name", user.Org)
 	d.Set("resource_id", user.ResourceID)
 	d.Set("console_access_denied", user.ConsoleAccessDenied)
-
+	d.SetId(user.ResourceID)
 	return diags
 }
 
@@ -137,6 +141,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	d.Set("user_id", user.ID)
+	d.SetId(user.ResourceID)
 	resourceUserRead(ctx, d, m)
 
 	return diags
