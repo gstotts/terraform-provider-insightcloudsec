@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	ics "github.com/gstotts/insightcloudsec"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -22,11 +23,6 @@ func resourceUser() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"user_id": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The ID assigned to the user",
-			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -59,11 +55,6 @@ func resourceUser() *schema.Resource {
 				Computed:    true,
 				Description: "The organization name to which the user belongs",
 			},
-			"resource_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The resource_id for the user",
-			},
 			"console_access_denied": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -88,7 +79,11 @@ func resourceUser() *schema.Resource {
 func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*ics.Client)
-	user, err := c.Users.GetUserByID(d.Get("user_id").(int))
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	user, err := c.Users.GetUserByID(id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -107,12 +102,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	} else {
 		d.Set("access_level", "BASIC_USER")
 	}
-	d.Set("two_factor_enabled", user.TwoFactorEnabled)
-	d.Set("two_factor_required", user.TwoFactorRequired)
 	d.Set("organization_name", user.Org)
-	d.Set("resource_id", user.ResourceID)
 	d.Set("console_access_denied", user.ConsoleAccessDenied)
-	d.SetId(user.ResourceID)
+	d.SetId(strconv.Itoa(user.ID))
 	return diags
 }
 
@@ -121,20 +113,19 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	c := m.(*ics.Client)
 
 	user, err := c.Users.Create(ics.User{
-		Name:              d.Get("name").(string),
-		Username:          d.Get("username").(string),
-		Email:             d.Get("email_address").(string),
-		TwoFactorRequired: d.Get("two_factor_required").(bool),
-		AccessLevel:       d.Get("access_level").(string),
+		Name:        d.Get("name").(string),
+		Username:    d.Get("username").(string),
+		Email:       d.Get("email_address").(string),
+		AccessLevel: d.Get("access_level").(string),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("user_id", user.ID)
 	d.Set("temporary_pw", user.TempPassword)
 	d.Set("temp_pw_expiration", user.TempPasswordExpiration)
-	d.SetId(user.ResourceID)
+	tflog.Debug(ctx, fmt.Sprintf("Retrieved Data: %v", user))
+	d.SetId(strconv.Itoa(user.ID))
 	resourceUserRead(ctx, d, m)
 
 	return diags
@@ -164,22 +155,6 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 			if err != nil {
 				return diag.FromErr(err)
 			}
-		}
-	}
-
-	if d.HasChange("two_factor_enabled") {
-		if !d.Get("two_factor_enabled").(bool) {
-			err := c.Users.Disable2FA(d.Get("user_id").(int))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Cannot Enable 2FA",
-				Detail:   "2FA can only be enabled by the user.  This attribute is only for disabling.",
-			})
-			return diags
 		}
 	}
 
