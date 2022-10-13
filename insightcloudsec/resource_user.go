@@ -43,29 +43,11 @@ func resourceUser() *schema.Resource {
 				Required:    true,
 				Description: "The username for the user",
 			},
-			"password": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "The password for the user",
-				ForceNew:    true,
-			},
 			"access_level": {
 				Type:             schema.TypeString,
 				Required:         true,
 				Description:      "The access level to associate with the user",
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"BASIC_USER", "ORGANIZATION_ADMIN", "DOMAIN_VIEWER", "DOMAIN_ADMIN"}, false)),
-			},
-			"two_factor_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Boolean representing if 2FA is enabled for the user",
-			},
-			"two_factor_required": {
-				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "Boolean representing whether 2FA is required for this user",
 			},
 			"organization_id": {
 				Type:        schema.TypeInt,
@@ -87,6 +69,17 @@ func resourceUser() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Boolean representing if a user's console access is currently denied",
+			},
+			"temporary_pw": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Temporary password returned for resets or intial creation",
+				Sensitive:   true,
+			},
+			"temp_pw_expiration": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Time and date of temporary password expiration",
 			},
 		},
 	}
@@ -131,8 +124,6 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		Name:              d.Get("name").(string),
 		Username:          d.Get("username").(string),
 		Email:             d.Get("email_address").(string),
-		Password:          d.Get("password").(string),
-		ConfirmPassword:   d.Get("password").(string),
 		TwoFactorRequired: d.Get("two_factor_required").(bool),
 		AccessLevel:       d.Get("access_level").(string),
 	})
@@ -141,6 +132,8 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	d.Set("user_id", user.ID)
+	d.Set("temporary_pw", user.TempPassword)
+	d.Set("temp_pw_expiration", user.TempPasswordExpiration)
 	d.SetId(user.ResourceID)
 	resourceUserRead(ctx, d, m)
 
@@ -175,7 +168,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	if d.HasChange("two_factor_enabled") {
-		if d.Get("two_factor_enabled").(bool) {
+		if !d.Get("two_factor_enabled").(bool) {
 			err := c.Users.Disable2FA(d.Get("user_id").(int))
 			if err != nil {
 				return diag.FromErr(err)
