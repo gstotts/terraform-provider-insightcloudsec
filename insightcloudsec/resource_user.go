@@ -176,7 +176,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 	if d.HasChange("two_factor_enabled") {
 		if d.Get("two_factor_enabled").(bool) {
-			err := c.Users.Disable2FA(d.Get("user_id").(int32))
+			err := c.Users.Disable2FA(d.Get("user_id").(int))
 			if err != nil {
 				return diag.FromErr(err)
 			}
