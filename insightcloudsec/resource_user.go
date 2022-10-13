@@ -161,7 +161,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		} else {
 			// Handle different call to go from org/basic level to domain level permissions (promote via /v2/public/user/divvyuser:%d:/edit-access-level giving current and desired payload)
 			in_state, desired := d.GetChange("access_level")
-			_, err := c.Users.EditAccessLevel(in_state, desired)
+			_, err := c.Users.EditAccessLevel(d.Get("user_id").(int), in_state.(string), desired.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
