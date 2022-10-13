@@ -154,9 +154,14 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	d.Partial(true)
 
 	if d.HasChanges("name", "email_address", "username", "access_level") {
-		_, err := c.Users.UpdateUserInfo(d.Get("user_id").(int), d.Get("name").(string), d.Get("username").(string), d.Get("email_address").(string), d.Get("access_level").(string))
-		if err != nil {
-			return diag.FromErr(err)
+		if d.Get("access_level").(string) != "DOMAIN_ADMIN" || d.Get("access_level").(string) != "DOMAIN_VIEWER" {
+			_, err := c.Users.UpdateUserInfo(d.Get("user_id").(int), d.Get("name").(string), d.Get("username").(string), d.Get("email_address").(string), d.Get("access_level").(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			// Handle different call to go from org/basic level to domain level permissions (promote via /v2/public/user/divvyuser:%d:/edit-access-level giving current and desired payload)
+
 		}
 	}
 
