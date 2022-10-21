@@ -33,7 +33,7 @@ func Provider() *schema.Provider {
 			"insightcloudsec_bot":            resourceBot(),
 			"insightcloudsec_cloud":          resourceCloud(),
 			"insightcloudsec_custom_insight": resourceInsight(),
-			"insightcloudsec_user":           resourceUser()
+			"insightcloudsec_user":           resourceUser(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"insightcloudsec_cloud":       datasSourceCloud(),
